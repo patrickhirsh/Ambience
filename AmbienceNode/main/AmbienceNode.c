@@ -1,27 +1,38 @@
-#include <stdio.h>
-#include "sdkconfig.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_system.h"
-#include "esp_spi_flash.h"
+#include "AmbienceNodeCore.h"
+#include "AmbienceNodeOTA.h"
+
 
 void app_main(void)
 {
-	printf("Hello World! This is a custom application!");
-	esp_chip_info_t chip_info;
-    esp_chip_info(&chip_info);
-    printf("This is %s chip with %d CPU core(s), WiFi%s%s, ",
-            CONFIG_IDF_TARGET,
-            chip_info.cores,
-            (chip_info.features & CHIP_FEATURE_BT) ? "/BT" : "",
-            (chip_info.features & CHIP_FEATURE_BLE) ? "/BLE" : "");
+	core_boot_log();
 
-    printf("silicon revision %d, ", chip_info.revision);
+	// Initialize NVS.
+    esp_err_t e = nvs_flash_init();
+    if (e == ESP_ERR_NVS_NO_FREE_PAGES || e == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        // 1.OTA app partition table has a smaller NVS partition size than the non-OTA
+        // partition table. This size mismatch may cause NVS initialization to fail.
+        // 2.NVS partition contains data in new format and cannot be recognized by this version of code.
+        // If this happens, we erase NVS partition and initialize NVS again.
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        e = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK( e );
 
-    printf("%dMB %s flash\n", spi_flash_get_chip_size() / (1024 * 1024),
-            (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    printf("Minimum free heap size: %d bytes\n", esp_get_minimum_free_heap_size());
+    /* This helper function configures Wi-Fi or Ethernet, as selected in menuconfig.
+     * Read "Establishing Wi-Fi or Ethernet Connection" section in
+     * examples/protocols/README.md for more information about this function.
+    */
+    ESP_ERROR_CHECK(example_connect());
 
-	fflush(stdout);
+#if CONFIG_EXAMPLE_CONNECT_WIFI
+    /* Ensure to disable any WiFi power save mode, this allows best throughput
+     * and hence timings for overall OTA operation.
+     */
+    esp_wifi_set_ps(WIFI_PS_NONE);
+#endif // CONFIG_EXAMPLE_CONNECT_WIFI
+
+    xTaskCreate(&ota_task, "ota_task", 1024 * 8, NULL, 5, NULL);
 }
