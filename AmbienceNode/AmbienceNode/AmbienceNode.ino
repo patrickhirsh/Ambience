@@ -1,4 +1,5 @@
 #include "AmbienceNodeCore.h"
+#include "AmbienceNodeOTA.h"
 
 #define DATA_PIN 12
 #define NUM_LEDS 10
@@ -9,7 +10,9 @@ CHSV dynamicHue = CHSV(0, 255, 255);
 
 void setup() 
 {
-  Serial.begin(BAUD_RATE);
+  InitLogging();
+  InitWiFi();
+  InitOTA();
   
   FastLED.clear();
   FastLED.show();
@@ -18,11 +21,13 @@ void setup()
 
 void loop() 
 {
+  UpdateOTA();
+  
   for (int i = 0; i < NUM_LEDS; i++)
   {
     leds[i] = dynamicHue;
   }
-  delay(200);
+  delay(50);
   if (dynamicHue.hue == 255)
   {
     dynamicHue.hue = 0;

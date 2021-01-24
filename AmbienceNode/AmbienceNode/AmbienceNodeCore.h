@@ -5,6 +5,10 @@
 #include <math.h>
 
 // ESP Library
+#include <ArduinoOTA.h>
+#include <ESPmDNS.h>
+#include <WiFi.h>
+#include <WiFiUdp.h>
 
 // FastLED
 #include <FastLED.h>
@@ -34,5 +38,58 @@
 #include <pixelset.h>
 #include <pixeltypes.h>
 #include <power_mgt.h>
+
+
+// ==================== Globals ==================== //
+
+// Enables logging over serial port 115200
+#define DEBUG 1
+
+// Serial BAUD rate
+#define BAUDRATE 115200
+
+
+// ==================== Logging ==================== //
+
+void InitLogging() {
+  #if DEBUG
+  Serial.begin(BAUDRATE);
+  delay(100);
+  Serial.println("Logging Initialized");
+  #endif
+}
+
+#if DEBUG
+#define LOG(m) ( Serial.println(m) )
+#define LOGW(m) ( Serial.print(m) )
+#define LOGF(m, v) ( Serial.printf(m, v) )
+#else
+#define LOG(m) ({})
+#define LOGW(m) ({})
+#define LOGF(m, v) ({})
+#endif
+
+
+// ==================== WiFi ==================== //
+
+void InitWiFi() {
+
+  // WiFi credentials... TODO: don't store in plain text
+  const char* ssid = "";
+  const char* pass = "";
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, pass);
+  delay(1000);
+  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    LOGW("failed to connect to WiFi with SSID: ");
+    LOGW(ssid);
+    LOG(". rebooting...");
+    delay(5000);
+    ESP.restart();
+  }
+  LOGW("Wifi initialized with IP ");
+  LOG(WiFi.localIP());
+}
 
 #endif
