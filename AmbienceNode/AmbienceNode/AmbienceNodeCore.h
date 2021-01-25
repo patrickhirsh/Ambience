@@ -80,8 +80,8 @@ void InitLogging() {
 void InitWiFi() {
 
   // WiFi credentials... TODO: don't store in plain text
-  const char* ssid = "Rocket2";
-  const char* pass = "ignition303";
+  const char* ssid = "";
+  const char* pass = "";
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, pass);
