@@ -7,7 +7,9 @@
 // ESP Library
 #include <ArduinoOTA.h>
 #include <ESPmDNS.h>
+#include <WebServer.h>
 #include <WiFi.h>
+#include <WiFiClient.h>
 #include <WiFiUdp.h>
 
 // FastLED
@@ -42,6 +44,9 @@
 
 // ==================== Globals ==================== //
 
+// AmbienceNode Software Version
+#define VERSION "0.01"
+
 // Enables logging over serial port 115200
 #define DEBUG 1
 
@@ -75,8 +80,8 @@ void InitLogging() {
 void InitWiFi() {
 
   // WiFi credentials... TODO: don't store in plain text
-  const char* ssid = "";
-  const char* pass = "";
+  const char* ssid = "Rocket2";
+  const char* pass = "ignition303";
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, pass);

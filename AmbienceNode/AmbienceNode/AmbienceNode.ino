@@ -1,9 +1,9 @@
 #include "AmbienceNodeCore.h"
 #include "AmbienceNodeOTA.h"
+#include "AmbienceNodeWebserver.h"
 
 #define DATA_PIN 12
 #define NUM_LEDS 10
-#define BAUD_RATE 9600
 
 CRGB leds[NUM_LEDS];
 CHSV dynamicHue = CHSV(0, 255, 255);
@@ -13,6 +13,7 @@ void setup()
   InitLogging();
   InitWiFi();
   InitOTA();
+  InitWebserver();
   
   FastLED.clear();
   FastLED.show();
@@ -22,6 +23,7 @@ void setup()
 void loop() 
 {
   UpdateOTA();
+  UpdateWebserver();
   
   for (int i = 0; i < NUM_LEDS; i++)
   {
