@@ -3,9 +3,12 @@
 
 #include "AmbienceNodeCore.h"
 
-void InitOTA() {
+void InitOTA() 
+{
   ArduinoOTA
-    .onStart([]() {
+
+    .onStart([]() 
+    {
       String type;
       if (ArduinoOTA.getCommand() == U_FLASH) {
         type = "sketch";
@@ -16,13 +19,19 @@ void InitOTA() {
       // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
       LOG("Start updating " + type);
     })
-    .onEnd([]() {
+
+    .onEnd([]() 
+    {
       LOG("\nEnd");
     })
-    .onProgress([](unsigned int progress, unsigned int total) {
+
+    .onProgress([](unsigned int progress, unsigned int total) 
+    {
       LOGF("Progress: %u%%\r", (progress / (total / 100)));
     })
-    .onError([](ota_error_t error) {
+
+    .onError([](ota_error_t error) 
+    {
       LOGF("Error[%u]: ", error);
       if (error == OTA_AUTH_ERROR) LOG("Auth Failed");
       else if (error == OTA_BEGIN_ERROR) LOG("Begin Failed");
@@ -32,11 +41,11 @@ void InitOTA() {
     });
 
   ArduinoOTA.begin();
-
   LOG("OTA Initialized");
 }
 
-void UpdateOTA() {
+void UpdateOTA() 
+{
   ArduinoOTA.handle();
 }
 

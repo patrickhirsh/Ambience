@@ -44,19 +44,30 @@
 
 // ==================== Globals ==================== //
 
+
 // AmbienceNode Software Version
 #define VERSION "0.01"
 
-// Enables logging over serial port 115200
+// Enables logging over serial port
 #define DEBUG 1
 
 // Serial BAUD rate
 #define BAUDRATE 115200
 
+// LED Data pin
+#define DATA_PIN 14
+
+// Built-in LED pin
+#define BUILTIN_LED 2
+
+// Number of LEDs
+#define NUM_LEDS 10
+
 
 // ==================== Logging ==================== //
 
-void InitLogging() {
+void InitLogging() 
+{
   #if DEBUG
   Serial.begin(BAUDRATE);
   delay(100);
@@ -77,11 +88,12 @@ void InitLogging() {
 
 // ==================== WiFi ==================== //
 
-void InitWiFi() {
+void InitWiFi() 
+{
 
   // WiFi credentials... TODO: don't store in plain text
-  const char* ssid = "";
-  const char* pass = "";
+  const char* ssid = "HNET2";
+  const char* pass = "Flask!Deranged1!Oasis!Jaws";
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, pass);

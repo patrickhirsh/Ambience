@@ -7,7 +7,8 @@ WebServer server(80);
 
 // ==================== Webserver Handles ==================== //
 
-void HandleWebserverRoot() {
+void HandleWebserverRoot() 
+{
   const char* usage = 
     "AmbienceNode " VERSION "\n"
     "\n\n"
@@ -17,7 +18,8 @@ void HandleWebserverRoot() {
   server.send(200, "text/plain", usage);
 }
 
-void HandleWebserverNotFound() {
+void HandleWebserverNotFound() 
+{
   String message = "File Not Found\n\n";
   message += "URI: ";
   message += server.uri();
@@ -35,13 +37,15 @@ void HandleWebserverNotFound() {
 
 // ==================== Webserver ==================== //
 
-void InitWebserver() {
+void InitWebserver() 
+{
   if (!MDNS.begin("esp32")) {
     LOG("MDNS failed to start");
   }
 
   // bind handles
   server.on("/", HandleWebserverRoot);
+  server.on("/red", HandleWebserverRoot);
   server.onNotFound(HandleWebserverNotFound);
 
   // start webserver
@@ -49,7 +53,8 @@ void InitWebserver() {
   LOG("Webserver initialized");
 }
 
-void UpdateWebserver() {
+void UpdateWebserver() 
+{
   server.handleClient();
 }
 
