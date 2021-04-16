@@ -41,72 +41,80 @@
 #include <pixeltypes.h>
 #include <power_mgt.h>
 
-
-// ==================== Globals ==================== //
-
-
-// AmbienceNode Software Version
-#define VERSION "0.01"
-
-// Enables logging over serial port
-#define DEBUG 1
-
-// Serial BAUD rate
-#define BAUDRATE 115200
-
-// LED Data pin
-#define DATA_PIN 14
-
-// Built-in LED pin
-#define BUILTIN_LED 2
-
-// Number of LEDs
-#define NUM_LEDS 10
-
-
-// ==================== Logging ==================== //
-
-void InitLogging() 
+namespace AmbienceNodeCore
 {
-  #if DEBUG
-  Serial.begin(BAUDRATE);
-  delay(100);
-  Serial.println("Logging Initialized");
-  #endif
-}
+  // ==================== Globals ==================== //
 
-#if DEBUG
-#define LOG(m) ( Serial.println(m) )
-#define LOGW(m) ( Serial.print(m) )
-#define LOGF(m, v) ( Serial.printf(m, v) )
-#else
-#define LOG(m) ({})
-#define LOGW(m) ({})
-#define LOGF(m, v) ({})
-#endif
+  // AmbienceNode Software Version
+  #define VERSION "0.01"
+
+  // Enables logging over serial port
+  #define DEBUG 1
+
+  // Serial BAUD rate
+  #define BAUDRATE 115200
+
+  // LED Data pin
+  #define DATA_PIN 14
+
+  // Built-in LED pin
+  #define BUILTIN_LED 2
+
+  // Number of LEDs
+  #define NUM_LEDS 10
 
 
-// ==================== WiFi ==================== //
+  // ==================== Hardware ==================== //
 
-void InitWiFi() 
-{
-
-  // WiFi credentials... TODO: don't store in plain text
-  const char* ssid = "HNET2";
-  const char* pass = "Flask!Deranged1!Oasis!Jaws";
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, pass);
-  delay(1000);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    LOGW("failed to connect to WiFi with SSID: ");
-    LOGW(ssid);
-    LOG(". rebooting...");
-    delay(5000);
-    ESP.restart();
+  void InitHardware()
+  {
+    pinMode(BUILTIN_LED, OUTPUT);
   }
-  LOGW("Wifi initialized with IP ");
-  LOG(WiFi.localIP());
-}
 
+
+  // ==================== Logging ==================== //
+
+  void InitLogging() 
+  {
+    #if DEBUG
+    Serial.begin(BAUDRATE);
+    delay(100);
+    Serial.println("Logging Initialized");
+    #endif
+  }
+
+  #if DEBUG
+  #define LOG(m) ( Serial.println(m) )
+  #define LOGW(m) ( Serial.print(m) )
+  #define LOGF(m, v) ( Serial.printf(m, v) )
+  #else
+  #define LOG(m) ({})
+  #define LOGW(m) ({})
+  #define LOGF(m, v) ({})
+  #endif
+
+
+  // ==================== WiFi ==================== //
+
+  void InitWiFi() 
+  {
+
+    // WiFi credentials... TODO: don't store in plain text
+    const char* ssid = "HNET2";
+    const char* pass = "Flask!Deranged1!Oasis!Jaws";
+
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, pass);
+    delay(1000);
+    while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+      LOGW("failed to connect to WiFi with SSID: ");
+      LOGW(ssid);
+      LOG(". rebooting...");
+      delay(5000);
+      ESP.restart();
+    }
+    LOGW("Wifi initialized with IP ");
+    LOG(WiFi.localIP());
+  }
+}
 #endif

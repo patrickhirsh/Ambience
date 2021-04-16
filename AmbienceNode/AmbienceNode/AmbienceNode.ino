@@ -1,23 +1,22 @@
 #include "AmbienceNodeCore.h"
 #include "AmbienceNodeOTA.h"
-#include "AmbienceNodeWebserver.h"
 #include "AmbienceNodeLED.h"
+#include "AmbienceNodeWebServer.h"
 
 
 void setup() 
-{
-  pinMode(BUILTIN_LED, OUTPUT);
-  
-  InitLogging();
-  InitWiFi();
-  InitOTA();
-  InitWebserver();
-  InitLEDs();
+{ 
+  AmbienceNodeCore::InitHardware();
+  AmbienceNodeCore::InitLogging();
+  AmbienceNodeCore::InitWiFi();
+  AmbienceNodeLED::Init();
+  AmbienceNodeOTA::Init();
+  AmbienceNodeWebServer::Init();
 }
 
 void loop() 
 {
-  UpdateOTA();
-  UpdateWebserver();
-  UpdateLEDs();
+  AmbienceNodeOTA::Update();
+  AmbienceNodeWebServer::Update();
+  AmbienceNodeLED::Update();
 }
