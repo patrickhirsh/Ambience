@@ -69,6 +69,15 @@ namespace AmbienceNodeCore
   void InitHardware()
   {
     pinMode(BUILTIN_LED, OUTPUT);
+
+    // 3 quick LED flashes indicate initial boot
+    for (int i = 0; i < 3; i++)
+    {
+      digitalWrite(BUILTIN_LED, HIGH);
+      delay(200);
+      digitalWrite(BUILTIN_LED, LOW);
+      delay(200);
+    }
   }
 
 
@@ -98,21 +107,24 @@ namespace AmbienceNodeCore
 
   void InitWiFi() 
   {
-
     // WiFi credentials... TODO: don't store in plain text
     const char* ssid = "HNET2";
     const char* pass = "Flask!Deranged1!Oasis!Jaws";
-
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, pass);
-    delay(1000);
-    while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+
+    // Attempt to establish a connection
+    int attempts = 0;
+    while (WiFi.waitForConnectResult() != WL_CONNECTED) 
+    {     
+      attempts++;
       LOGW("failed to connect to WiFi with SSID: ");
       LOGW(ssid);
-      LOG(". rebooting...");
-      delay(5000);
+      LOGF(". Attempt %d. Retrying...", attempts);
       ESP.restart();
     }
+
+    // Success!
     LOGW("Wifi initialized with IP ");
     LOG(WiFi.localIP());
   }

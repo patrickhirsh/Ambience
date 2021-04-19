@@ -42,7 +42,8 @@ namespace AmbienceNodeWebServer
 
   void Init() 
   {
-    if (!MDNS.begin("esp32")) {
+    if (!MDNS.begin("esp32")) 
+    {
       LOG("MDNS failed to start");
     }
 
