@@ -3,6 +3,8 @@
 
 // Standard Library
 #include <math.h>
+#include <iostream>
+#include <string>
 
 // ESP Library
 #include <ArduinoOTA.h>
