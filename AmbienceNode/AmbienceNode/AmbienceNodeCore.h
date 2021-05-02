@@ -1,11 +1,6 @@
 #ifndef AMBIENCE_NODE_CORE
 #define AMBIENCE_NODE_CORE
 
-// Standard Library
-#include <math.h>
-#include <iostream>
-#include <string>
-
 // ESP Library
 #include <ArduinoOTA.h>
 #include <ESPmDNS.h>
@@ -51,7 +46,7 @@ namespace AmbienceNodeCore
   #define VERSION "0.01"
 
   // Enables logging over serial port
-  #define DEBUG 1
+  #define DEBUG 0
 
   // Serial BAUD rate
   #define BAUDRATE 115200

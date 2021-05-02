@@ -3,38 +3,77 @@
 
 #include "AmbienceNodeCore.h"
 
+
 namespace AmbienceNodeLED
 {
-  CRGB leds[NUM_LEDS];
-  CHSV dynamicHue = CHSV(0, 255, 255);
+  class LEDMode
+  {
+    public:
+      virtual void Update();
+  };
+
+  namespace
+  {
+    LEDMode* currentMode;
+    CRGB leds[NUM_LEDS];
+
+    // ==================== Color ==================== //
+
+    class LEDModeColor : public LEDMode
+    {
+      public:
+        LEDModeColor();
+        void Update();
+        void SetColor(CHSV c) { color = c; }
+        CHSV GetColor() { return color; }
+
+      private:
+        CHSV color;
+    };
+
+    LEDModeColor::LEDModeColor()
+    {
+      FastLED.clear();
+      CHSV color = CHSV(0, 0, 0);
+    }
+
+    void LEDModeColor::Update()
+    {
+      for (int i = 0; i < NUM_LEDS; i++)
+      {
+        leds[i] = color;
+      }
+    }
+
+    LEDModeColor* M_Color;
+
+  }
 
   void Init() 
   {
+    // Init LED Modes
+    M_Color = new LEDModeColor();
+    currentMode = M_Color;
+
+    FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
     FastLED.clear();
     FastLED.show();
-    FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
   }
 
   void Update() 
   {
-    for (int i = 0; i < NUM_LEDS; i++)
-    {
-      leds[i] = dynamicHue;
-    }
-
-    delay(50);
-    
-    if (dynamicHue.hue == 255)
-    {
-      dynamicHue.hue = 0;
-    }
-
-    else
-    {
-      dynamicHue.hue++;
-    }
-
+    currentMode->Update();
     FastLED.show();
+  }
+
+  void SetMode(LEDMode* mode)
+  {
+    currentMode = mode;
+  }
+
+  LEDMode* GetMode()
+  {
+    return currentMode;
   }
 }
 #endif
