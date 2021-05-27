@@ -1,6 +1,6 @@
 //
 //  AmbienceApp.swift
-//  Shared
+//  Ambience
 //
 //  Created by Patrick Hirsh on 5/26/21.
 //
