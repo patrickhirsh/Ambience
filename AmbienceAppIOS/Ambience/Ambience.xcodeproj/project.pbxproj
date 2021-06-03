@@ -8,22 +8,28 @@
 
 /* Begin PBXBuildFile section */
 		CD4B742D265F47320003DA85 /* AmbienceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B742C265F47320003DA85 /* AmbienceApp.swift */; };
-		CD4B742F265F47320003DA85 /* AmbienceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B742E265F47320003DA85 /* AmbienceView.swift */; };
+		CD4B742F265F47320003DA85 /* HomePage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B742E265F47320003DA85 /* HomePage.swift */; };
 		CD4B7431265F47340003DA85 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CD4B7430265F47340003DA85 /* Assets.xcassets */; };
 		CD4B7434265F47340003DA85 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CD4B7433265F47340003DA85 /* Preview Assets.xcassets */; };
 		CD4B743E26685C860003DA85 /* AmbienceDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B743D26685C860003DA85 /* AmbienceDevice.swift */; };
-		CD4B7440266861EF0003DA85 /* Ambience.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B743F266861EF0003DA85 /* Ambience.swift */; };
+		CD4B7440266861EF0003DA85 /* AmbienceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B743F266861EF0003DA85 /* AmbienceViewModel.swift */; };
+		CD4B74442668ACE80003DA85 /* NodeSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B74432668ACE80003DA85 /* NodeSettings.swift */; };
+		CD4B74462668AD020003DA85 /* AddNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B74452668AD020003DA85 /* AddNode.swift */; };
+		CD4B74492668AE430003DA85 /* Previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD4B74482668AE430003DA85 /* Previews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		CD4B7429265F47320003DA85 /* Ambience.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ambience.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CD4B742C265F47320003DA85 /* AmbienceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbienceApp.swift; sourceTree = "<group>"; };
-		CD4B742E265F47320003DA85 /* AmbienceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbienceView.swift; sourceTree = "<group>"; };
+		CD4B742E265F47320003DA85 /* HomePage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePage.swift; sourceTree = "<group>"; };
 		CD4B7430265F47340003DA85 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CD4B7433265F47340003DA85 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		CD4B7435265F47340003DA85 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CD4B743D26685C860003DA85 /* AmbienceDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbienceDevice.swift; sourceTree = "<group>"; };
-		CD4B743F266861EF0003DA85 /* Ambience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ambience.swift; sourceTree = "<group>"; };
+		CD4B743F266861EF0003DA85 /* AmbienceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmbienceViewModel.swift; sourceTree = "<group>"; };
+		CD4B74432668ACE80003DA85 /* NodeSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeSettings.swift; sourceTree = "<group>"; };
+		CD4B74452668AD020003DA85 /* AddNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddNode.swift; sourceTree = "<group>"; };
+		CD4B74482668AE430003DA85 /* Previews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Previews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,10 +62,10 @@
 		CD4B742B265F47320003DA85 /* Ambience */ = {
 			isa = PBXGroup;
 			children = (
+				CD4B74422668AC650003DA85 /* Views */,
 				CD4B742C265F47320003DA85 /* AmbienceApp.swift */,
 				CD4B743D26685C860003DA85 /* AmbienceDevice.swift */,
-				CD4B743F266861EF0003DA85 /* Ambience.swift */,
-				CD4B742E265F47320003DA85 /* AmbienceView.swift */,
+				CD4B743F266861EF0003DA85 /* AmbienceViewModel.swift */,
 				CD4B7430265F47340003DA85 /* Assets.xcassets */,
 				CD4B7435265F47340003DA85 /* Info.plist */,
 				CD4B7432265F47340003DA85 /* Preview Content */,
@@ -73,6 +79,17 @@
 				CD4B7433265F47340003DA85 /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		CD4B74422668AC650003DA85 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				CD4B742E265F47320003DA85 /* HomePage.swift */,
+				CD4B74452668AD020003DA85 /* AddNode.swift */,
+				CD4B74432668ACE80003DA85 /* NodeSettings.swift */,
+				CD4B74482668AE430003DA85 /* Previews.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -144,10 +161,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CD4B742F265F47320003DA85 /* AmbienceView.swift in Sources */,
-				CD4B7440266861EF0003DA85 /* Ambience.swift in Sources */,
+				CD4B74462668AD020003DA85 /* AddNode.swift in Sources */,
+				CD4B74442668ACE80003DA85 /* NodeSettings.swift in Sources */,
+				CD4B742F265F47320003DA85 /* HomePage.swift in Sources */,
+				CD4B7440266861EF0003DA85 /* AmbienceViewModel.swift in Sources */,
 				CD4B742D265F47320003DA85 /* AmbienceApp.swift in Sources */,
 				CD4B743E26685C860003DA85 /* AmbienceDevice.swift in Sources */,
+				CD4B74492668AE430003DA85 /* Previews.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

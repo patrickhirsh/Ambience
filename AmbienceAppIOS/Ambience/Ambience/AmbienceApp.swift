@@ -9,10 +9,10 @@ import SwiftUI
 
 @main
 struct AmbienceApp: App {
-    private let VM = Ambience()
+    private let AVM = AmbienceViewModel()
     var body: some Scene {
         WindowGroup {
-            AmbienceView(AmbienceVM: VM)
+            HomePage(AmbienceVM: AVM)
         }
     }
 }

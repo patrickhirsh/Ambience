@@ -7,6 +7,6 @@
 
 import SwiftUI
 
-class Ambience {
-    var devices = [AmbienceDevice]()
+class AmbienceViewModel: ObservableObject {
+    @Published var devices = [AmbienceDevice]()
 }
