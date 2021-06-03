@@ -7,13 +7,15 @@
 
 import Foundation
 
-class AmbienceDevice {
+struct AmbienceDevice: Identifiable {
+    private(set) var id: String
     private(set) var Name: String
     private(set) var IP: String
     
     init(Name name: String, IP ip: String) {
         Name = name
         IP = ip
+        id = IP
     }
     
     func SetMode(_ mode: String) {

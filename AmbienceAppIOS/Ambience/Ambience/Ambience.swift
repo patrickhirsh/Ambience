@@ -8,5 +8,5 @@
 import SwiftUI
 
 class Ambience {
-    private var devices: Array<AmbienceDevice>
+    var devices = [AmbienceDevice]()
 }
