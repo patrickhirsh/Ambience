@@ -48,7 +48,7 @@ namespace Ambience
 
   Server::Server(LEDStrip* stripToControl)
   {
-    if (server != nullptr)
+    if (server == nullptr)
     {
       server = new WebServer(80);
     }

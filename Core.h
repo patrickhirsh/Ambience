@@ -46,7 +46,7 @@ namespace Ambience
   #define VERSION "0.01"
 
   // Enables logging over serial port
-  #define DEBUG 0
+  #define DEBUG 1
 
   // Serial BAUD rate
   #define BAUDRATE 115200
@@ -118,7 +118,8 @@ namespace Ambience
       LOGW("failed to connect to WiFi with SSID: ");
       LOGW(ssid);
       LOGF(". Attempt %d. Retrying...", attempts);
-      ESP.restart();
+      delay(500);
+      if (attempts > 5) { ESP.restart(); }
     }
 
     // Success!

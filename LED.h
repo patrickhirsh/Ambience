@@ -22,7 +22,7 @@ namespace Ambience
       class LEDMode
       {
         public:
-          virtual void Update(CRGB (&leds)[NUM_LEDS], const CHSV &color1, const CHSV &color2, const CHSV &color3) {};
+          virtual void Update(CRGB (&leds)[NUM_LEDS], const CHSV color1, const CHSV color2, const CHSV color3) {};
       };
 
 
@@ -30,7 +30,7 @@ namespace Ambience
 
       class LEDMode_Color : public LEDMode 
       {
-        void Update(CRGB (&leds)[NUM_LEDS], const CHSV &color1, const CHSV &color2, const CHSV &color3)
+        void Update(CRGB (&leds)[NUM_LEDS], const CHSV color1, const CHSV color2, const CHSV color3)
         {
           for (int i = 0; i < NUM_LEDS; i++)
           {
@@ -79,6 +79,7 @@ namespace Ambience
     Color3 = CHSV(0, 0, 255);
     currentMode = Mode::Color;
     currentLEDMode = LEDMode_Color();
+    LOG("LEDs Initialized");
   }
 
   void LEDStrip::Update()
@@ -90,6 +91,12 @@ namespace Ambience
         CHSV(Color1.h, Color1.s, Color1.v * brightness),
         CHSV(Color2.h, Color2.s, Color2.v * brightness), 
         CHSV(Color3.h, Color3.s, Color3.v * brightness));
+
+      // TODO: Not This (LED Modes should be updating these...)
+      for (int i = 0; i < NUM_LEDS; i++)
+      {
+        leds[i] = Color1;
+      }
       FastLED.show();
     }
   }
