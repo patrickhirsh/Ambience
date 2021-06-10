@@ -1,12 +1,20 @@
-#ifndef AMBIENCE_NODE_OTA
-#define AMBIENCE_NODE_OTA
+#ifndef AMBIENCE_OTA
+#define AMBIENCE_OTA
 
-#include "AmbienceNodeCore.h"
+#include "Core.h"
 
 
-namespace AmbienceNodeOTA
+namespace Ambience
 {
-  void Init() 
+  class OTA
+  {
+    public:
+      OTA       ();
+      ~OTA      () {}
+      void      Update();
+  };
+
+  OTA::OTA()
   {
     ArduinoOTA
 
@@ -72,9 +80,11 @@ namespace AmbienceNodeOTA
     LOG("OTA Initialized");
   }
 
-  void Update() 
+  void OTA::Update()
   {
     ArduinoOTA.handle();
   }
 }
+
+
 #endif

@@ -1,5 +1,5 @@
-#ifndef AMBIENCE_NODE_CORE
-#define AMBIENCE_NODE_CORE
+#ifndef AMBIENCE_CORE
+#define AMBIENCE_CORE
 
 // ESP Library
 #include <ArduinoOTA.h>
@@ -38,7 +38,7 @@
 #include <pixeltypes.h>
 #include <power_mgt.h>
 
-namespace AmbienceNodeCore
+namespace Ambience
 {
   // ==================== Globals ==================== //
 
