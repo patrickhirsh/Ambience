@@ -6,7 +6,6 @@
 
 namespace Ambience
 { 
-
   class LEDStrip
   {
 
@@ -22,7 +21,8 @@ namespace Ambience
       class LEDMode
       {
         public:
-          virtual void Update(CRGB (&leds)[NUM_LEDS], const CHSV color1, const CHSV color2, const CHSV color3) {};
+          virtual ~LEDMode() = 0;
+          virtual void Update(CHSV* buffer, const CHSV &color1, const CHSV &color2, const CHSV &color3) = 0;
       };
 
 
@@ -30,11 +30,12 @@ namespace Ambience
 
       class LEDMode_Color : public LEDMode 
       {
-        void Update(CRGB (&leds)[NUM_LEDS], const CHSV color1, const CHSV color2, const CHSV color3)
+        ~LEDMode_Color() {}
+        void Update(CHSV* buffer, const CHSV &color1, const CHSV &color2, const CHSV &color3)
         {
           for (int i = 0; i < NUM_LEDS; i++)
           {
-            leds[i] = color1;
+            buffer[i] = color1;
           }
         }
       };
@@ -59,65 +60,87 @@ namespace Ambience
 
     private:
       CRGB          leds[NUM_LEDS];
+      CHSV          buffer[NUM_LEDS];
       bool          active;
       Mode          currentMode;
-      LEDMode       currentLEDMode;
+      LEDMode*      currentLEDMode;
       float         brightness;
 
   };
 
+  LEDStrip::LEDMode::~LEDMode() {}
+
   LEDStrip::LEDStrip()
   {
+    // bind led array to FastLED library
     FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
     FastLED.clear();
     FastLED.show();
 
+    // initialize buffer
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+      buffer[i] = CHSV(0, 0, 0);
+    }
+
+    // set defaults
     active = true;
     brightness = 1.0;
     Color1 = CHSV(0, 0, 255);
     Color2 = CHSV(0, 0, 255);
     Color3 = CHSV(0, 0, 255);
     currentMode = Mode::Color;
-    currentLEDMode = LEDMode_Color();
+    currentLEDMode = new LEDMode_Color();
     LOG("LEDs Initialized");
   }
+
 
   void LEDStrip::Update()
   {
     if (active)
     {
-      currentLEDMode.Update(
-        leds, 
-        CHSV(Color1.h, Color1.s, Color1.v * brightness),
-        CHSV(Color2.h, Color2.s, Color2.v * brightness), 
-        CHSV(Color3.h, Color3.s, Color3.v * brightness));
+      // retrieve an updated buffer based on current mode and colors
+      currentLEDMode->Update(buffer, Color1, Color2, Color3);
 
-      // TODO: Not This (LED Modes should be updating these...)
+      // enforce strip settings / post processing on led array write
       for (int i = 0; i < NUM_LEDS; i++)
       {
-        leds[i] = Color1;
+        uint8_t h = buffer[i].h;
+        uint8_t s = buffer[i].s;
+        uint8_t v = buffer[i].v * brightness;
+        leds[i] = CHSV(h, s, v);
       }
       FastLED.show();
     }
   }
 
+
   void LEDStrip::SetMode(LEDStrip::Mode mode)
   {
+    LEDStrip::LEDMode* oldLEDMode = currentLEDMode;
     switch(mode)
+
     {
+      // *** Mode -> LEDMode Mapping *** //
+
       case LEDStrip::Mode::Color:
-        currentLEDMode = LEDMode_Color();
+        currentLEDMode = new LEDMode_Color();
         break;
+
       default:
         return;
     }
+
+    delete oldLEDMode;
     currentMode = mode;
   }
+
 
   LEDStrip::Mode LEDStrip::GetMode()
   {
     return currentMode;
   }
+
 
   void LEDStrip::SetBrightness(float brightnessScalar)
   {
@@ -127,10 +150,12 @@ namespace Ambience
     brightness = brightnessScalar;
   }
 
+
   float LEDStrip::GetBrightness()
   {
     return brightness;
   }
+
 
   void LEDStrip::SetActive(bool isActive)
   {
@@ -141,6 +166,7 @@ namespace Ambience
     }
     active = isActive;
   }
+
 
   bool LEDStrip::GetActive()
   {

@@ -76,10 +76,12 @@ namespace Ambience
     LOG("WebServer initialized");
   }
 
+
   void Server::Update()
   {
     server->handleClient();
   }
+
 
   // ==================== Server Handles ==================== //
 
@@ -169,6 +171,7 @@ namespace Ambience
     server->send(RESPONSE_OK);
   }
 
+
   void Server::HandleGetColor()
   {
     // TODO: Implement This
@@ -186,7 +189,7 @@ namespace Ambience
       if (server->argName(i) == "Mode")
       {
         
-        // *** Mode Mapping *** //
+        // *** Request String -> Mode Mapping *** //
 
         if (server->arg(i) == "Color") 
         {  
@@ -208,6 +211,7 @@ namespace Ambience
     LOG_RESPONSE(RESPONSE_BAD_REQUEST);
     server->send(RESPONSE_BAD_REQUEST);
   }
+
 
   void Server::HandleGetMode()
   {
@@ -240,6 +244,7 @@ namespace Ambience
       }
     }
   }
+
 
   void Server::HandleGetBrightness()
   {
@@ -281,6 +286,7 @@ namespace Ambience
     LOG_RESPONSE(RESPONSE_BAD_REQUEST);
     server->send(RESPONSE_BAD_REQUEST);
   }
+
 
   void Server::HandleGetActive()
   {
