@@ -4,15 +4,23 @@
 #include "Core.h"
 #include "LED.h"
 
+// WebServer Docs: https://github.com/espressif/arduino-esp32/blob/master/libraries/WebServer/src/WebServer.h
+// Response Code Standard: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+// JSON Serialization Docs: https://arduinojson.org/
+
+
 // WebServer logging
-#define LOG_REQUEST(m) LOGF("Ambience WebServer received a request with URI: %s\n", m)
-#define LOG_RESPONSE(c) LOGF("Ambience WebServer responded with: %d\n", c)
-#define LOG_MISSING_ARG(m, a) LOGF("Ambience WebServer missing required arg: %s ", a); LOGF("in URI: %s\n", m)
-#define LOG_INVALID_ARG(m, a) LOGF("Ambience WebServer encountered invalid value for arg: %s ", a); LOGF("in URI: %s\n", m)
+#define LOG_REQUEST(m) LOGF("Ambience Server received a request with URI: %s\n", m)
+#define LOG_RESPONSE(c) LOGF("Ambience Server responded with: %d\n", c)
+#define LOG_RESPONSE_PAYLOAD(c, p) LOGF("Ambience Server responded with: %d ", c); LOGF("payload: %s\n", p)
+#define LOG_MISSING_ARG(m, a) LOGF("Ambience Server missing required arg: %s ", a); LOGF("in URI: %s\n", m)
+#define LOG_INVALID_ARG(m, a) LOGF("Ambience Server encountered invalid value for arg: %s ", a); LOGF("in URI: %s\n", m)
 
 
 namespace Ambience
 {
+
+  // ==================== Server ==================== //
   class Server
   {    
     public:
@@ -42,19 +50,21 @@ namespace Ambience
         "  * This is a test";
   };
 
-  WebServer* Server::server = nullptr;
+  WebServer* Server::server = new WebServer(80);
   LEDStrip* Server::leds = nullptr;
 
 
   Server::Server(LEDStrip* stripToControl)
   {
-    if (server == nullptr)
-    {
-      server = new WebServer(80);
-    }
     leds = stripToControl;
 
-    if (!MDNS.begin("esp32")) 
+    // start MDNS and broadcast service
+    if (MDNS.begin("esp32." + WiFi.localIP()))
+    {
+      LOG("mDNS initialized");
+      MDNS.addService("ambience", "_http", 80);
+    }
+    else
     {
       LOG("MDNS failed to start");
     }
@@ -69,7 +79,7 @@ namespace Ambience
     server->on("/SetBrightness", Server::HandleSetBrightness);
     server->on("/GetBrightness", Server::HandleGetBrightness);
     server->on("/SetActive", Server::HandleSetActive);
-    server->on("/GetActive", Server::HandleSetActive);
+    server->on("/GetActive", Server::HandleGetActive);
 
     // start webserver
     server->begin();
@@ -85,11 +95,9 @@ namespace Ambience
 
   // ==================== Server Handles ==================== //
 
-  // WebServer Docs: https://github.com/espressif/arduino-esp32/blob/master/libraries/WebServer/src/WebServer.h
-  // Response Code Standard: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-  #define RESPONSE_OK               200
+  #define RESPONSE_OK               200     // OK
   #define RESPONSE_BAD_REQUEST      400     // Invalid Arguments / Request Syntax
-  #define RESPONSE_PAGE_NOT_FOUND   404     // BInvalid Request / Bad URI
+  #define RESPONSE_PAGE_NOT_FOUND   404     // Invalid Request / Bad URI
 
 
   // ==================== Not Found ==================== //
@@ -174,7 +182,37 @@ namespace Ambience
 
   void Server::HandleGetColor()
   {
-    // TODO: Implement This
+    LOG_REQUEST(server->uri());
+
+    for (int i = 0; i < server->args(); i++)
+    {
+      if (server->argName(i) == "Color")
+      {
+        int colorIndex = server->arg(i).toInt();
+        if(colorIndex < 1 || colorIndex > 3)
+        {
+          LOG_INVALID_ARG(server->uri(), server->argName(i));
+          LOG_RESPONSE(RESPONSE_BAD_REQUEST);
+          server->send(RESPONSE_BAD_REQUEST);
+          return;
+        }
+
+        StaticJsonDocument<64> payload;
+        JsonArray color = payload.createNestedArray("Color");
+        if (colorIndex == 1) { color.add(leds->Color1.h); color.add(leds->Color1.s); color.add(leds->Color1.v); }
+        if (colorIndex == 2) { color.add(leds->Color2.h); color.add(leds->Color2.s); color.add(leds->Color2.v); }
+        if (colorIndex == 3) { color.add(leds->Color3.h); color.add(leds->Color3.s); color.add(leds->Color3.v); }
+        String serializedPayload;
+        serializeJson(payload, serializedPayload);
+        LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
+        server->send(RESPONSE_OK, "json", serializedPayload);
+        return;
+      }
+    }
+
+    LOG_MISSING_ARG(server->uri(), "Color");
+    LOG_RESPONSE(RESPONSE_BAD_REQUEST);
+    server->send(RESPONSE_BAD_REQUEST);
   }
 
 
@@ -188,22 +226,20 @@ namespace Ambience
     {
       if (server->argName(i) == "Mode")
       {
-        
-        // *** Request String -> Mode Mapping *** //
-
-        if (server->arg(i) == "Color") 
-        {  
-          leds->SetMode(LEDStrip::Mode::Color);
+        if (leds->SetMode(server->arg(i)))
+        {
           LOG_RESPONSE(RESPONSE_OK);
           server->send(RESPONSE_OK);
           return;
         }
-
-        // invalid mode
-        LOG_INVALID_ARG(server->uri(), server->argName(i));
-        LOG_RESPONSE(RESPONSE_BAD_REQUEST);
-        server->send(RESPONSE_BAD_REQUEST);
-        return;
+        else
+        {
+          // invalid mode arg
+          LOG_INVALID_ARG(server->uri(), server->argName(i));
+          LOG_RESPONSE(RESPONSE_BAD_REQUEST);
+          server->send(RESPONSE_BAD_REQUEST);
+          return;
+        }
       }
     }
 
@@ -215,7 +251,13 @@ namespace Ambience
 
   void Server::HandleGetMode()
   {
-    // TODO: Implement This
+    LOG_REQUEST(server->uri());
+    StaticJsonDocument<64> payload;
+    payload["Mode"] = leds->GetMode();
+    String serializedPayload;
+    serializeJson(payload, serializedPayload);
+    LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
+    server->send(RESPONSE_OK, "json", serializedPayload);
   }
 
 
@@ -248,7 +290,13 @@ namespace Ambience
 
   void Server::HandleGetBrightness()
   {
-    // TODO: Implement This
+    LOG_REQUEST(server->uri());
+    StaticJsonDocument<16> payload;
+    payload["Brightness"] = (int)(leds->GetBrightness() * 100);
+    String serializedPayload;
+    serializeJson(payload, serializedPayload);
+    LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
+    server->send(RESPONSE_OK, "json", serializedPayload);
   }
 
 
@@ -290,8 +338,13 @@ namespace Ambience
 
   void Server::HandleGetActive()
   {
-    // TODO: Implement This
+    LOG_REQUEST(server->uri());
+    StaticJsonDocument<16> payload;
+    payload["Active"] = leds->GetActive();
+    String serializedPayload;
+    serializeJson(payload, serializedPayload);
+    LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
+    server->send(RESPONSE_OK, "json", serializedPayload);
   }
-
 }
 #endif

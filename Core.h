@@ -38,6 +38,10 @@
 #include <pixeltypes.h>
 #include <power_mgt.h>
 
+// JSON
+#include <ArduinoJson.h>
+
+
 namespace Ambience
 {
   // ==================== Globals ==================== //
@@ -58,7 +62,11 @@ namespace Ambience
   #define BUILTIN_LED 2
 
   // Number of LEDs
-  #define NUM_LEDS 10
+  #define NUM_LEDS 10 // Test Strip
+  //#define NUM_LEDS 122 // Kitchen Island
+  //#define NUM_LEDS 100 // Desk
+  //#define NUM_LEDS 100 // TV Stand
+  //#define NUM_LEDS 100 // Server Rack
 
 
   // ==================== Hardware ==================== //

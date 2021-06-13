@@ -8,29 +8,32 @@ namespace Ambience
 { 
   class LEDStrip
   {
-
-    // ==================== LED Mode ==================== //
-
-    public:
-      enum Mode
-      {
-        Color,
-      };
-    
     private:
-      class LEDMode
+
+
+      // ==================== Modes ==================== //
+      /*
+      Modes are represented as objects derived from the "Mode" class which provide an "Update"
+      function that mutates the passed "buffer" when invoked. Modes should utilize the provided 
+      color palete when appropriate and work regardless of strip length.
+
+      To support a new mode:
+        - Create a derived class for the new mode which implements the required pure-virtual functions
+        - Add a case for it in SetMode() to make it available as a valid mode
+      */
+      class Mode
       {
         public:
-          virtual ~LEDMode() = 0;
+          virtual ~Mode() = 0;
           virtual void Update(CHSV* buffer, const CHSV &color1, const CHSV &color2, const CHSV &color3) = 0;
       };
 
 
-      // ==================== LEDMode_Color ==================== //
+      // ==================== M_Color ==================== //
 
-      class LEDMode_Color : public LEDMode 
+      class M_Color : public Mode 
       {
-        ~LEDMode_Color() {}
+        ~M_Color() {}
         void Update(CHSV* buffer, const CHSV &color1, const CHSV &color2, const CHSV &color3)
         {
           for (int i = 0; i < NUM_LEDS; i++)
@@ -41,14 +44,15 @@ namespace Ambience
       };
 
 
-    // ==================== LED Strip ==================== //
+      // ==================== LED Strip ==================== //
 
     public:
       LEDStrip      ();
       ~LEDStrip     () {}
       void          Update();
-      void          SetMode(Mode mode);
-      Mode          GetMode();
+
+      bool          SetMode(String mode);
+      String        GetMode();
       void          SetBrightness(float brightnessScalar);
       float         GetBrightness();
       void          SetActive(bool isActive);
@@ -59,16 +63,17 @@ namespace Ambience
       CHSV          Color3;
 
     private:
-      CRGB          leds[NUM_LEDS];
-      CHSV          buffer[NUM_LEDS];
+      CRGB          leds[NUM_LEDS];     // FastLED registered LED buffer
+      CHSV          buffer[NUM_LEDS];   // pre post-processing buffer
       bool          active;
-      Mode          currentMode;
-      LEDMode*      currentLEDMode;
       float         brightness;
-
+      Mode*         mode;
+      String        modeName;
   };
 
-  LEDStrip::LEDMode::~LEDMode() {}
+  // virtual destructors
+  LEDStrip::Mode::~Mode() {}
+
 
   LEDStrip::LEDStrip()
   {
@@ -89,8 +94,8 @@ namespace Ambience
     Color1 = CHSV(0, 0, 255);
     Color2 = CHSV(0, 0, 255);
     Color3 = CHSV(0, 0, 255);
-    currentMode = Mode::Color;
-    currentLEDMode = new LEDMode_Color();
+    mode = new M_Color();
+    modeName = "Color";
     LOG("LEDs Initialized");
   }
 
@@ -99,46 +104,30 @@ namespace Ambience
   {
     if (active)
     {
-      // retrieve an updated buffer based on current mode and colors
-      currentLEDMode->Update(buffer, Color1, Color2, Color3);
+      // update buffer based on current mode and colors
+      mode->Update(buffer, Color1, Color2, Color3);
 
-      // enforce strip settings / post processing on led array write
+      // apply post processing step on buffer -> FastLED-bound leds array coppy
       for (int i = 0; i < NUM_LEDS; i++)
       {
-        uint8_t h = buffer[i].h;
-        uint8_t s = buffer[i].s;
-        uint8_t v = buffer[i].v * brightness;
-        leds[i] = CHSV(h, s, v);
+        leds[i] = CHSV(buffer[i].h, buffer[i].s, buffer[i].v * brightness);
       }
       FastLED.show();
     }
   }
 
 
-  void LEDStrip::SetMode(LEDStrip::Mode mode)
+  bool LEDStrip::SetMode(String Name)
   {
-    LEDStrip::LEDMode* oldLEDMode = currentLEDMode;
-    switch(mode)
-
-    {
-      // *** Mode -> LEDMode Mapping *** //
-
-      case LEDStrip::Mode::Color:
-        currentLEDMode = new LEDMode_Color();
-        break;
-
-      default:
-        return;
-    }
-
-    delete oldLEDMode;
-    currentMode = mode;
+    // This maybe isn't the best way to declare a definitive list of supported modes... Might revisit this
+    if (Name = "Color") { delete mode; mode = new M_Color(); modeName = Name; return true; }
+    return false;
   }
 
 
-  LEDStrip::Mode LEDStrip::GetMode()
+  String LEDStrip::GetMode()
   {
-    return currentMode;
+    return modeName;
   }
 
 
