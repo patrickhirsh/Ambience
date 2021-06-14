@@ -43,11 +43,64 @@ namespace Ambience
       static WebServer* server;
       static LEDStrip* leds;
 
+
+  // ==================== Usage ==================== //
+
       static constexpr char* USAGE =
-        "Ambience " VERSION "\n"
-        "\n\n"
-        "WEBSERVER API:\n"
-        "  * This is a test";
+        "\n"
+        "Ambience Device Version " VERSION "\n"
+        "\n"
+        "\n"
+        "\n"
+        "API Reference:\n"
+        "\n"
+        "\n"
+        "  /SetColor - sets the color (HSV value) of the color indexed at 'Color'\n"
+        "    - Color=<1..3>\n"
+        "    - H=<0..255>\n"
+        "    - S=<0..255>\n"
+        "    - V=<0..255>\n"
+        "\n"
+        "      RETURNS: none\n"
+        "\n"
+        "\n"
+        "  /GetColor - gets the color (HSV value) of the color indexed at 'Color'\n"
+        "    - Color=<1..3>\n"
+        "\n"
+        "      RETURNS: {'Color': [<0..255>,<0..255>,<0..255>]}\n"
+        "\n"
+        "\n"
+        "  /SetMode - sets the mode. Expects a valid string 'Mode' name\n"
+        "    - Mode=<Mode>\n"
+        "\n"
+        "      RETURNS: none\n"
+        "\n"
+        "\n"
+        "  /GetMode - gets the current mode\n"
+        "\n"
+        "      RETURNS: {'Mode':<Mode>}\n"
+        "\n"
+        "\n"
+        "  /SetBrightness - sets the brightness\n"
+        "    - Brightness=<0..100>\n"
+        "\n"
+        "      RETURNS: none\n"
+        "\n"
+        "\n"
+        "  /GetBrightness - gets the current brightness\n"
+        "\n"
+        "      RETURNS: {'Brightness':<0..100>}\n"
+        "\n"
+        "\n"
+        "  /SetActive - sets the active (power) state of the leds\n"
+        "    - Active=<bool>\n"
+        "\n"
+        "      RETURNS: none\n"
+        "\n"
+        "\n"
+        "  /GetActive - gets the active (power) state of the leds\n"
+        "\n"
+        "      RETURNS: {'Active':<bool>}\n";
   };
 
   WebServer* Server::server = new WebServer(80);
@@ -62,7 +115,7 @@ namespace Ambience
     if (MDNS.begin("esp32." + WiFi.localIP()))
     {
       LOG("mDNS initialized");
-      MDNS.addService("ambience", "_http", 80);
+      MDNS.addService("_ambience", "_http", 80);
     }
     else
     {

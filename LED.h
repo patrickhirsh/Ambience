@@ -63,7 +63,7 @@ namespace Ambience
       CHSV          Color3;
 
     private:
-      CRGB          leds[NUM_LEDS];     // FastLED registered LED buffer
+      CRGB          leds[NUM_LEDS];     // FastLED registered LED buffer (post-processed)
       CHSV          buffer[NUM_LEDS];   // pre post-processing buffer
       bool          active;
       float         brightness;

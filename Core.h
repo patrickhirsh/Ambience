@@ -47,7 +47,7 @@ namespace Ambience
   // ==================== Globals ==================== //
 
   // AmbienceNode Software Version
-  #define VERSION "0.01"
+  #define VERSION "1.1"
 
   // Enables logging over serial port
   #define DEBUG 1
