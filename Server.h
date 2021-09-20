@@ -112,10 +112,10 @@ namespace Ambience
     leds = stripToControl;
 
     // start MDNS and broadcast service
-    if (MDNS.begin("esp32." + WiFi.localIP()))
+    if (MDNS.begin("Ambience." + WiFi.localIP()))
     {
       LOG("mDNS initialized");
-      MDNS.addService("_ambience", "_http", 80);
+      MDNS.addService("_ambience", "_tcp", 80);
     }
     else
     {

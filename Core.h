@@ -61,26 +61,34 @@ namespace Ambience
   // Built-in LED pin
   #define BUILTIN_LED 2
 
+  // External LED pin
+  #define EXTERN_LED 12 
+
+  // Synchronized LED indicator state
+  #define PULL_LED_INDICATOR(STATE) do {digitalWrite(EXTERN_LED, STATE); digitalWrite(BUILTIN_LED, STATE);} while(0)
+
   // Number of LEDs
   #define NUM_LEDS 10 // Test Strip
   //#define NUM_LEDS 122 // Kitchen Island
   //#define NUM_LEDS 100 // Desk
   //#define NUM_LEDS 100 // TV Stand
   //#define NUM_LEDS 100 // Server Rack
+  //#define NUM_LEDS 165 // Outdoor Bar
 
 
   // ==================== Hardware ==================== //
 
   void InitHardware()
   {
+    pinMode(EXTERN_LED, OUTPUT);
     pinMode(BUILTIN_LED, OUTPUT);
 
     // 3 quick LED flashes indicate initial boot
     for (int i = 0; i < 3; i++)
     {
-      digitalWrite(BUILTIN_LED, HIGH);
+      PULL_LED_INDICATOR(HIGH);
       delay(200);
-      digitalWrite(BUILTIN_LED, LOW);
+      PULL_LED_INDICATOR(LOW);
       delay(200);
     }
   }

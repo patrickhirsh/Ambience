@@ -44,6 +44,24 @@ namespace Ambience
       };
 
 
+      // ==================== M_Rainbow ==================== //
+
+      class M_Rainbow : public Mode 
+      {
+        int hue = 0;
+        ~M_Rainbow() {}
+        void Update(CHSV* buffer, const CHSV &color1, const CHSV &color2, const CHSV &color3)
+        {
+          hue++;
+          if (hue > 255) { hue = 0;}
+          for (int i = 0; i < NUM_LEDS; i++)
+          {
+            buffer[i] = CHSV(hue, 255, 255);
+          }
+        }
+      };
+
+
       // ==================== LED Strip ==================== //
 
     public:
@@ -120,7 +138,8 @@ namespace Ambience
   bool LEDStrip::SetMode(String Name)
   {
     // This maybe isn't the best way to declare a definitive list of supported modes... Might revisit this
-    if (Name = "Color") { delete mode; mode = new M_Color(); modeName = Name; return true; }
+    if (Name == "Color") { delete mode; mode = new M_Color(); modeName = Name; return true; }
+    if (Name == "Rainbow") { delete mode; mode = new M_Rainbow(); modeName = Name; return true; }
     return false;
   }
 

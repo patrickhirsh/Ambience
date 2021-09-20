@@ -34,20 +34,20 @@ namespace Ambience
         delay(2000);
         for (int i = 0; i < 2; i++)
         {
-          digitalWrite(BUILTIN_LED, HIGH);
+          PULL_LED_INDICATOR(HIGH);
           delay(500);
-          digitalWrite(BUILTIN_LED, LOW);
+          PULL_LED_INDICATOR(LOW);
           delay(500);
         }
 
         // Leave LED on during OTA update
-        digitalWrite(BUILTIN_LED, HIGH);
+        PULL_LED_INDICATOR(HIGH);
       })
 
       .onEnd([]() 
       {
         LOG("\nEnd");
-        digitalWrite(BUILTIN_LED, LOW);
+        PULL_LED_INDICATOR(LOW);
       })
 
       .onProgress([](unsigned int progress, unsigned int total) 
@@ -65,13 +65,13 @@ namespace Ambience
         else if (error == OTA_END_ERROR) LOG("End Failed");
 
         // two quick flashes indicate failure
-        digitalWrite(BUILTIN_LED, LOW);
+        PULL_LED_INDICATOR(LOW);
         delay(1000);
         for (int i = 0; i < 2; i++)
         {
-          digitalWrite(BUILTIN_LED, HIGH);
+          PULL_LED_INDICATOR(HIGH);
           delay(250);
-          digitalWrite(BUILTIN_LED, LOW);
+          PULL_LED_INDICATOR(LOW);
           delay(250);
         }
       });
