@@ -21,6 +21,7 @@ namespace Ambience
 {
 
   // ==================== Server ==================== //
+  
   class Server
   {    
     public:
@@ -55,19 +56,20 @@ namespace Ambience
         "API Reference:\n"
         "\n"
         "\n"
-        "  /SetColor - sets the color (HSV value) of the color indexed at 'Color'\n"
+        "  /SetColor - sets the color (HSVW or HSV value) of the color indexed at 'Color'\n"
         "    - Color=<1..3>\n"
         "    - H=<0..255>\n"
         "    - S=<0..255>\n"
         "    - V=<0..255>\n"
+        "    - W=<0..255> (Optional)\n"
         "\n"
         "      RETURNS: none\n"
         "\n"
         "\n"
-        "  /GetColor - gets the color (HSV value) of the color indexed at 'Color'\n"
+        "  /GetColor - gets the color (HSVW value) of the color indexed at 'Color'\n"
         "    - Color=<1..3>\n"
         "\n"
-        "      RETURNS: {'Color': [<0..255>,<0..255>,<0..255>]}\n"
+        "      RETURNS: {'Color': [<0..255>,<0..255>,<0..255>,<0.255>]}\n"
         "\n"
         "\n"
         "  /SetMode - sets the mode. Expects a valid string 'Mode' name\n"
@@ -82,14 +84,14 @@ namespace Ambience
         "\n"
         "\n"
         "  /SetBrightness - sets the brightness\n"
-        "    - Brightness=<0..100>\n"
+        "    - Brightness=<0..255>\n"
         "\n"
         "      RETURNS: none\n"
         "\n"
         "\n"
         "  /GetBrightness - gets the current brightness\n"
         "\n"
-        "      RETURNS: {'Brightness':<0..100>}\n"
+        "      RETURNS: {'Brightness':<0..255>}\n"
         "\n"
         "\n"
         "  /SetActive - sets the active (power) state of the leds\n"
@@ -178,7 +180,7 @@ namespace Ambience
   void Server::HandleSetColor()
   {
     LOG_REQUEST(server->uri());
-    int color = -1, h = -1, s = -1, v = -1;
+    int color = -1, h = -1, s = -1, v = -1, w = -1;
 
     // parse args
     for (int i = 0; i < server->args(); i++)
@@ -196,7 +198,7 @@ namespace Ambience
         color = val;
       }
 
-      else if (server->argName(i) == "H" || server->argName(i) == "S" || server->argName(i) == "V")
+      else if (server->argName(i) == "H" || server->argName(i) == "S" || server->argName(i) == "V" || server->argName(i) == "W")
       {
         int val = server->arg(i).toInt();
         if((val == 0 && server->arg(i) != "0") || val < 0 || val > 255)
@@ -209,6 +211,7 @@ namespace Ambience
         if (server->argName(i) == "H") { h = val; }
         if (server->argName(i) == "S") { s = val; }
         if (server->argName(i) == "V") { v = val; }
+        if (server->argName(i) == "W") { w = val; }
       }
     }
 
@@ -219,14 +222,25 @@ namespace Ambience
       if (h == -1) { LOG_MISSING_ARG(server->uri(), "H"); }
       if (s == -1) { LOG_MISSING_ARG(server->uri(), "S"); }
       if (v == -1) { LOG_MISSING_ARG(server->uri(), "V"); }
+      // Note, "W" is optional
       LOG_RESPONSE(RESPONSE_BAD_REQUEST);
       server->send(RESPONSE_BAD_REQUEST);
       return;
     }
 
-    if (color == 1) { leds->Color1 = CHSV(h, s, v); }
-    if (color == 2) { leds->Color2 = CHSV(h, s, v); }
-    if (color == 3) { leds->Color3 = CHSV(h, s, v); }
+    if (w == -1)
+    {
+      // white channel not specified
+      if (color == 1) { leds->Color1 = LEDStrip::Color(h, s, v); }
+      if (color == 2) { leds->Color2 = LEDStrip::Color(h, s, v); }
+      if (color == 3) { leds->Color3 = LEDStrip::Color(h, s, v); }
+    }
+    else
+    {
+      if (color == 1) { leds->Color1 = LEDStrip::Color(h, s, v, w); }
+      if (color == 2) { leds->Color2 = LEDStrip::Color(h, s, v, w); }
+      if (color == 3) { leds->Color3 = LEDStrip::Color(h, s, v, w); }
+    }
 
     LOG_RESPONSE(RESPONSE_OK);
     server->send(RESPONSE_OK);
@@ -252,9 +266,9 @@ namespace Ambience
 
         StaticJsonDocument<64> payload;
         JsonArray color = payload.createNestedArray("Color");
-        if (colorIndex == 1) { color.add(leds->Color1.h); color.add(leds->Color1.s); color.add(leds->Color1.v); }
-        if (colorIndex == 2) { color.add(leds->Color2.h); color.add(leds->Color2.s); color.add(leds->Color2.v); }
-        if (colorIndex == 3) { color.add(leds->Color3.h); color.add(leds->Color3.s); color.add(leds->Color3.v); }
+        if (colorIndex == 1) { color.add(leds->Color1.H); color.add(leds->Color1.S); color.add(leds->Color1.V); color.add(leds->Color1.W); }
+        if (colorIndex == 2) { color.add(leds->Color2.H); color.add(leds->Color2.S); color.add(leds->Color2.V); color.add(leds->Color2.W); }
+        if (colorIndex == 3) { color.add(leds->Color3.H); color.add(leds->Color3.S); color.add(leds->Color3.V); color.add(leds->Color3.W); }
         String serializedPayload;
         serializeJson(payload, serializedPayload);
         LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
@@ -325,14 +339,14 @@ namespace Ambience
       if (server->argName(i) == "Brightness")
       {
         int val = server->arg(i).toInt();
-        if((val == 0 && server->arg(i) != "0") || val < 0 || val > 100)
+        if((val == 0 && server->arg(i) != "0") || val < 0 || val > 255)
         {
           LOG_INVALID_ARG(server->uri(), server->argName(i));
           LOG_RESPONSE(RESPONSE_BAD_REQUEST);
           server->send(RESPONSE_BAD_REQUEST);
           return;
         }
-        leds->SetBrightness(val * 0.01);
+        leds->SetBrightness(val);
         LOG_RESPONSE(RESPONSE_OK);
         server->send(RESPONSE_OK);
         return;
@@ -345,7 +359,7 @@ namespace Ambience
   {
     LOG_REQUEST(server->uri());
     StaticJsonDocument<16> payload;
-    payload["Brightness"] = (int)(leds->GetBrightness() * 100);
+    payload["Brightness"] = (int)(leds->GetBrightness());
     String serializedPayload;
     serializeJson(payload, serializedPayload);
     LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);

@@ -2,41 +2,15 @@
 #define AMBIENCE_CORE
 
 // ESP Library
-#include <ArduinoOTA.h>
+#include <ArduinoOTA.h>     // Requires ArduinoOTA by Juraj Andrassy
 #include <ESPmDNS.h>
 #include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
 
-// FastLED
-#include <FastLED.h>
-#include <bitswap.h>
-#include <chipsets.h>
-#include <color.h>
-#include <colorpalettes.h>
-#include <colorutils.h>
-#include <controller.h>
-#include <cpp_compat.h>
-#include <dmx.h>
-#include <fastled_config.h>
-#include <fastled_delay.h>
-#include <fastled_progmem.h>
-#include <fastpin.h>
-#include <fastspi.h>
-#include <fastspi_bitbang.h>
-#include <fastspi_dma.h>
-#include <fastspi_nop.h>
-#include <fastspi_ref.h>
-#include <fastspi_types.h>
-#include <hsv2rgb.h>
-#include <led_sysdefs.h>
-#include <lib8tion.h>
-#include <noise.h>
-#include <platforms.h>
-#include <pixelset.h>
-#include <pixeltypes.h>
-#include <power_mgt.h>
+// NeoPixel
+#include <Adafruit_NeoPixel.h>
 
 // JSON
 #include <ArduinoJson.h>
@@ -47,7 +21,7 @@ namespace Ambience
   // ==================== Globals ==================== //
 
   // AmbienceNode Software Version
-  #define VERSION "1.1"
+  #define VERSION "1.2"
 
   // Enables logging over serial port
   #define DEBUG 1
@@ -67,13 +41,23 @@ namespace Ambience
   // Synchronized LED indicator state
   #define PULL_LED_INDICATOR(STATE) do {digitalWrite(EXTERN_LED, STATE); digitalWrite(BUILTIN_LED, STATE);} while(0)
 
+  // Hardware flags to pass to the NEOPIXEL library (See Adafruit_NeoPixel.h)
+  #define NEOPIXEL_FLAGS (NEO_GRBW + NEO_KHZ800)
+
+
+  // ==================== LED Count ==================== //
+  
+  /* Number of LEDs installed in a variety of locations in my apartment.
+  NUM_LEDS should be definied as the corresponding definition befow when
+  flashing firmware to that node. */
+  #define LED_COUNT_TEST_STRIP 10
+  #define LED_COUNT_KITCHEN_ISLAND 122
+  #define LED_COUNT_DESK 100
+  #define LED_COUNT_TV_STAND 100
+  #define LED_COUNT_SERVER_RACK 100
+
   // Number of LEDs
-  #define NUM_LEDS 10 // Test Strip
-  //#define NUM_LEDS 122 // Kitchen Island
-  //#define NUM_LEDS 100 // Desk
-  //#define NUM_LEDS 100 // TV Stand
-  //#define NUM_LEDS 100 // Server Rack
-  //#define NUM_LEDS 165 // Outdoor Bar
+  #define NUM_LEDS LED_COUNT_TEST_STRIP
 
 
   // ==================== Hardware ==================== //
@@ -83,7 +67,7 @@ namespace Ambience
     pinMode(EXTERN_LED, OUTPUT);
     pinMode(BUILTIN_LED, OUTPUT);
 
-    // 3 quick LED flashes indicate initial boot
+    // 3 quick LED flashes indicate boot sequence start
     for (int i = 0; i < 3; i++)
     {
       PULL_LED_INDICATOR(HIGH);

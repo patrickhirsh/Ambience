@@ -8,24 +8,76 @@ namespace Ambience
 { 
   class LEDStrip
   {
-    private:
+    public:
+      LEDStrip            ();
+      ~LEDStrip           () {}
+      void                Update();
+
+      bool                SetMode(String mode);
+      String              GetMode();
+      void                SetBrightness(uint8_t brightness);
+      uint8_t             GetBrightness();
+      void                SetActive(bool isActive);
+      bool                GetActive();
+
+
+      /*
+      TODO:
+        - Store colors locally in the form of HSV (or HSVW?) with "Color"
+        - Write a conversion method that converts and packs the HSV (or HSVW) value into Neopixel's packed WRGB uint32_t
+          - Will this be too computationally expensive to perform on EVERY pixel EVERY tick?
+          - if so.. consider storing the raw buffer in uint32_t and providing an HSV conversion function for classes that utilize it?
+            - increased complexity for writing modes
+            - possibly a pre-optimization step that is uneccesary
+
+        - Also consider: A DEBUG-ONLY timing system for tracking frame time
+      */
+      class Color
+      {
+        public:
+          uint8_t   H = 0;
+          uint8_t   S = 0;
+          uint8_t   V = 0;
+          uint8_t   W = 0;
+
+          Color() {}
+          Color(uint8_t h, uint8_t s, uint8_t v, uint8_t w = 0) 
+          { 
+            H = h; 
+            S = s; 
+            V = v; 
+            W = w; 
+          }
+
+          /* Returns a packed 4-byte "WRGB" value*/
+          uint32_t WRGB()
+          {
+            // Test - W=255, R=0, G=0, B=0
+            return 4278190080;
+          }
+      };
+
+      Color               Color1;
+      Color               Color2;
+      Color               Color3;
 
 
       // ==================== Modes ==================== //
-      /*
-      Modes are represented as objects derived from the "Mode" class which provide an "Update"
-      function that mutates the passed "buffer" when invoked. Modes should utilize the provided 
-      color palete when appropriate and work regardless of strip length.
 
-      To support a new mode:
-        - Create a derived class for the new mode which implements the required pure-virtual functions
-        - Add a case for it in SetMode() to make it available as a valid mode
+      /*
+      Objects that derive from "Mode" represent a lighting mode that can mutate the state of the LEDs (buffer) each tick.
+      Modes should utilize the passed color palette when appropriate and consider NUM_LEDS when writing to the buffer.
+      "Update()" will be invoked once per tick and "buffer" will always contain NUM_LEDS elements.
+
+      To declare and implement a new mode:
+          - implement your class derriving from the LEDStrip::Mode class below
+          - add a case for your mode in LEDStrip::SetMode so it can be used at runtime
       */
       class Mode
       {
         public:
           virtual ~Mode() = 0;
-          virtual void Update(CHSV* buffer, const CHSV &color1, const CHSV &color2, const CHSV &color3) = 0;
+          virtual void Update(Color* buffer, const Color &color1, const Color &color2, const Color &color3) = 0;
       };
 
 
@@ -34,7 +86,7 @@ namespace Ambience
       class M_Color : public Mode 
       {
         ~M_Color() {}
-        void Update(CHSV* buffer, const CHSV &color1, const CHSV &color2, const CHSV &color3)
+        void Update(Color* buffer, const Color &color1, const Color &color2, const Color &color3)
         {
           for (int i = 0; i < NUM_LEDS; i++)
           {
@@ -46,11 +98,13 @@ namespace Ambience
 
       // ==================== M_Rainbow ==================== //
 
+    /* TODO: Hue is broken... Fix that
+
       class M_Rainbow : public Mode 
       {
         int hue = 0;
         ~M_Rainbow() {}
-        void Update(CHSV* buffer, const CHSV &color1, const CHSV &color2, const CHSV &color3)
+        void Update(Color* buffer, const Color &color1, const Color &color2, const Color &color3)
         {
           hue++;
           if (hue > 255) { hue = 0;}
@@ -60,58 +114,39 @@ namespace Ambience
           }
         }
       };
-
-
-      // ==================== LED Strip ==================== //
-
-    public:
-      LEDStrip      ();
-      ~LEDStrip     () {}
-      void          Update();
-
-      bool          SetMode(String mode);
-      String        GetMode();
-      void          SetBrightness(float brightnessScalar);
-      float         GetBrightness();
-      void          SetActive(bool isActive);
-      bool          GetActive();
-
-      CHSV          Color1;
-      CHSV          Color2;
-      CHSV          Color3;
+      */
 
     private:
-      CRGB          leds[NUM_LEDS];     // FastLED registered LED buffer (post-processed)
-      CHSV          buffer[NUM_LEDS];   // pre post-processing buffer
-      bool          active;
-      float         brightness;
-      Mode*         mode;
-      String        modeName;
+      Adafruit_NeoPixel   leds;
+
+      Color               buffer[NUM_LEDS];   // raw led buffer (no post-processing)
+      bool                active;             // should the leds be turned on?
+      float               brightness;         // 0.0f - 1.0f brightness value
+      Mode*               mode;               // current mode
+      String              modeName;           // name of the current mode
   };
 
-  // virtual destructors
   LEDStrip::Mode::~Mode() {}
 
 
   LEDStrip::LEDStrip()
   {
-    // bind led array to FastLED library
-    FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
-    FastLED.clear();
-    FastLED.show();
+    leds = Adafruit_NeoPixel((uint16_t)NUM_LEDS, (uint16_t)DATA_PIN, (neoPixelType)NEOPIXEL_FLAGS);
+    leds.begin();
+    leds.clear();
+    leds.show();
 
     // initialize buffer
     for (int i = 0; i < NUM_LEDS; i++)
     {
-      buffer[i] = CHSV(0, 0, 0);
+      buffer[i] = Color();
     }
 
     // set defaults
     active = true;
-    brightness = 1.0;
-    Color1 = CHSV(0, 0, 255);
-    Color2 = CHSV(0, 0, 255);
-    Color3 = CHSV(0, 0, 255);
+    Color1 = Color();
+    Color2 = Color();
+    Color3 = Color();
     mode = new M_Color();
     modeName = "Color";
     LOG("LEDs Initialized");
@@ -125,12 +160,14 @@ namespace Ambience
       // update buffer based on current mode and colors
       mode->Update(buffer, Color1, Color2, Color3);
 
-      // apply post processing step on buffer -> FastLED-bound leds array coppy
+      // apply post processing step on buffer, then write to strip
       for (int i = 0; i < NUM_LEDS; i++)
       {
-        leds[i] = CHSV(buffer[i].h, buffer[i].s, buffer[i].v * brightness);
+        // Post-processing (transitions/fades/etc.) apply here..
+
+        leds.setPixelColor(i, buffer[i].WRGB());
       }
-      FastLED.show();
+      leds.show();
     }
   }
 
@@ -139,7 +176,7 @@ namespace Ambience
   {
     // This maybe isn't the best way to declare a definitive list of supported modes... Might revisit this
     if (Name == "Color") { delete mode; mode = new M_Color(); modeName = Name; return true; }
-    if (Name == "Rainbow") { delete mode; mode = new M_Rainbow(); modeName = Name; return true; }
+    //if (Name == "Rainbow") { delete mode; mode = new M_Rainbow(); modeName = Name; return true; }
     return false;
   }
 
@@ -150,18 +187,15 @@ namespace Ambience
   }
 
 
-  void LEDStrip::SetBrightness(float brightnessScalar)
+  void LEDStrip::SetBrightness(uint8_t brightness)
   {
-    // chop out-of-range values
-    if (brightnessScalar > 1.0 ) { brightnessScalar = 1.0; }
-    if (brightnessScalar < 0.0 ) { brightnessScalar = 0.0; }
-    brightness = brightnessScalar;
+    leds.setBrightness(brightness);
   }
 
 
-  float LEDStrip::GetBrightness()
+  uint8_t LEDStrip::GetBrightness()
   {
-    return brightness;
+    return leds.getBrightness();
   }
 
 
@@ -169,8 +203,8 @@ namespace Ambience
   {
     if (!isActive)
     {
-      FastLED.clear();
-      FastLED.show();
+      leds.clear();
+      leds.show();
     }
     active = isActive;
   }

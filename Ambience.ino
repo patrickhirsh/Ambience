@@ -9,13 +9,16 @@ Ambience::Server* Server;
 
 void setup() 
 { 
+  // Initialize local hardware and LEDs first
   Ambience::InitHardware();
   Ambience::InitLogging();
-  Ambience::InitWiFi();
-
   Leds = new Ambience::LEDStrip();
+
+  // Initializes network and server communications
+  Ambience::InitWiFi();
   Ota = new Ambience::OTA();
   Server = new Ambience::Server(Leds);
+
 }
 
 void loop() 
