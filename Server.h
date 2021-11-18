@@ -58,7 +58,7 @@ namespace Ambience
         "\n"
         "  /SetColor - sets the color (HSVW or HSV value) of the color indexed at 'Color'\n"
         "    - Color=<1..3>\n"
-        "    - H=<0..255>\n"
+        "    - H=<0..65535>\n"
         "    - S=<0..255>\n"
         "    - V=<0..255>\n"
         "    - W=<0..255> (Optional)\n"
@@ -69,7 +69,7 @@ namespace Ambience
         "  /GetColor - gets the color (HSVW value) of the color indexed at 'Color'\n"
         "    - Color=<1..3>\n"
         "\n"
-        "      RETURNS: {'Color': [<0..255>,<0..255>,<0..255>,<0.255>]}\n"
+        "      RETURNS: {'Color': [<0..65535>,<0..255>,<0..255>,<0.255>]}\n"
         "\n"
         "\n"
         "  /SetMode - sets the mode. Expects a valid string 'Mode' name\n"
@@ -198,7 +198,22 @@ namespace Ambience
         color = val;
       }
 
-      else if (server->argName(i) == "H" || server->argName(i) == "S" || server->argName(i) == "V" || server->argName(i) == "W")
+      // Hue should fit in a uint16_t
+      else if (server->argName(i) == "H")
+      {
+        int val = server->arg(i).toInt();
+        if((val == 0 && server->arg(i) != "0") || val < 0 || val > 65535)
+        {
+          LOG_INVALID_ARG(server->uri(), server->argName(i));
+          LOG_RESPONSE(RESPONSE_BAD_REQUEST);
+          server->send(RESPONSE_BAD_REQUEST);
+          return;
+        }
+        h = val;
+      }
+
+      // Saturation, Value, and White should fit in a uint8_t
+      else if (server->argName(i) == "S" || server->argName(i) == "V" || server->argName(i) == "W")
       {
         int val = server->arg(i).toInt();
         if((val == 0 && server->arg(i) != "0") || val < 0 || val > 255)
