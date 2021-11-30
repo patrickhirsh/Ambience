@@ -71,9 +71,9 @@ namespace Ambience
         for (int i = 0; i < 2; i++)
         {
           PULL_LED_INDICATOR(HIGH);
-          delay(250);
+          delay(100);
           PULL_LED_INDICATOR(LOW);
-          delay(250);
+          delay(100);
         }
       });
 

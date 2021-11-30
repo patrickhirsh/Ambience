@@ -23,15 +23,15 @@ void setup()
   Leds = new Ambience::LEDStrip();
 
   // Init network systems
-  #if NETWORK
+  #if USE_NETWORK
   Ambience::InitWiFi();
   Server = new Ambience::Server(Leds);
-  #endif // NETWORK
+  #endif // USE_NETWORK
 
   // Init OTA systems
-  #if NETWORK && OTA
+  #if USE_NETWORK && USE_OTA
   Ota = new Ambience::OTA();
-  #endif // NETWORK && OTA
+  #endif // USE_NETWORK && USE_OTA
 }
 
 void loop() 
@@ -40,7 +40,7 @@ void loop()
   Ota->Update();
 #endif // USE_NETWORK && USE_OTA
 
-#if NETWORK
+#if USE_NETWORK
   Server->Update();
 #endif // USE_NETWORK
 

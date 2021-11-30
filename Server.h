@@ -114,6 +114,8 @@ namespace Ambience
   {
     leds = stripToControl;
 
+    // TODO: Possibly support mDNS device discovery?
+    /*
     // start MDNS and broadcast service
     if (MDNS.begin("Ambience." + WiFi.localIP()))
     {
@@ -124,6 +126,7 @@ namespace Ambience
     {
       LOG("MDNS failed to start");
     }
+    */
 
     // bind handles
     server->onNotFound(Server::HandleNotFound);

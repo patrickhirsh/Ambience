@@ -198,12 +198,6 @@ namespace Ambience
     leds.clear();
     leds.show();
 
-    // initialize buffer
-    for (int i = 0; i < NUM_LEDS; i++)
-    {
-      buffer[i] = Color(0, 0, 0, 0);
-    }
-
     // set defaults
     active = true;
     Color1 = Color();
@@ -211,6 +205,19 @@ namespace Ambience
     Color3 = Color();
     mode = new M_Color();
     modeName = "Color";
+
+    // initialize buffer
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+      buffer[i] = Color(0, 0, 0, 0);
+    }
+
+    // initialize strip with buffer
+    for (int i = 0; i < NUM_LEDS; i++)
+    {
+      leds.setPixelColor(i, buffer[i].WRGB());
+    }
+
     LOG("LEDs Initialized");
   }
 
