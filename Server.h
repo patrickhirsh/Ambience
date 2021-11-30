@@ -1,3 +1,4 @@
+#if USE_NETWORK
 #ifndef AMBIENCE_SERVER
 #define AMBIENCE_SERVER
 
@@ -429,4 +430,5 @@ namespace Ambience
     server->send(RESPONSE_OK, "json", serializedPayload);
   }
 }
-#endif
+#endif // AMBIENCE_SERVER
+#endif // USE_NETWORK

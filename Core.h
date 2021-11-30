@@ -1,13 +1,69 @@
 #ifndef AMBIENCE_CORE
 #define AMBIENCE_CORE
 
-// ESP Library
+
+// ==================== Globals ==================== //
+
+// AmbienceNode Software Version
+#define VERSION "1.2"
+
+// Enables logging over serial port
+#define DEBUG 1
+
+/* Enables OTA update functionality. If disabled, updates to system software
+must be performed over the serial port of the ESP. Requires NETWORK to be
+enabled. */
+#define USE_OTA 1
+
+/* Enables network/webserver functionality. If this is disabled, Ambience 
+Node will operate in offline mode and not attempt to connect to wifi or
+initialize the webserver. */
+#define USE_NETWORK 1
+
+// Serial BAUD rate
+#define BAUDRATE 115200
+
+// LED Data pin
+#define DATA_PIN 14
+
+// Built-in LED pin
+#define BUILTIN_LED 2
+
+// External LED pin
+#define EXTERN_LED 12 
+
+// Synchronized LED indicator state
+#define PULL_LED_INDICATOR(STATE) do {digitalWrite(EXTERN_LED, STATE); digitalWrite(BUILTIN_LED, STATE);} while(0)
+
+// Hardware flags to pass to the NEOPIXEL library (See Adafruit_NeoPixel.h)
+#define NEOPIXEL_FLAGS (NEO_GRBW + NEO_KHZ800)
+
+
+// ==================== LED Count ==================== //
+
+/* Number of LEDs installed in a variety of locations in my apartment.
+NUM_LEDS should be definied as the corresponding definition befow when
+flashing firmware to that node. */
+#define LED_COUNT_TEST_STRIP 10
+#define LED_COUNT_KITCHEN_ISLAND 122
+#define LED_COUNT_DESK 100
+#define LED_COUNT_TV_STAND 100
+#define LED_COUNT_SERVER_RACK 100
+
+// Number of LEDs
+#define NUM_LEDS LED_COUNT_TEST_STRIP
+
+// ESP libraries
+#if USE_OTA
 #include <ArduinoOTA.h>     // Requires ArduinoOTA by Juraj Andrassy
+#endif // USE_OTA
+#if USE_NETWORK
 #include <ESPmDNS.h>
 #include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
+#endif // USE_NETWORK
 
 // NeoPixel
 #include <Adafruit_NeoPixel.h>
@@ -18,47 +74,6 @@
 
 namespace Ambience
 {
-  // ==================== Globals ==================== //
-
-  // AmbienceNode Software Version
-  #define VERSION "1.2"
-
-  // Enables logging over serial port
-  #define DEBUG 1
-
-  // Serial BAUD rate
-  #define BAUDRATE 115200
-
-  // LED Data pin
-  #define DATA_PIN 14
-
-  // Built-in LED pin
-  #define BUILTIN_LED 2
-
-  // External LED pin
-  #define EXTERN_LED 12 
-
-  // Synchronized LED indicator state
-  #define PULL_LED_INDICATOR(STATE) do {digitalWrite(EXTERN_LED, STATE); digitalWrite(BUILTIN_LED, STATE);} while(0)
-
-  // Hardware flags to pass to the NEOPIXEL library (See Adafruit_NeoPixel.h)
-  #define NEOPIXEL_FLAGS (NEO_GRBW + NEO_KHZ800)
-
-
-  // ==================== LED Count ==================== //
-  
-  /* Number of LEDs installed in a variety of locations in my apartment.
-  NUM_LEDS should be definied as the corresponding definition befow when
-  flashing firmware to that node. */
-  #define LED_COUNT_TEST_STRIP 10
-  #define LED_COUNT_KITCHEN_ISLAND 122
-  #define LED_COUNT_DESK 100
-  #define LED_COUNT_TV_STAND 100
-  #define LED_COUNT_SERVER_RACK 100
-
-  // Number of LEDs
-  #define NUM_LEDS LED_COUNT_TEST_STRIP
-
 
   // ==================== Hardware ==================== //
 
@@ -127,4 +142,4 @@ namespace Ambience
     LOG(WiFi.localIP());
   }
 }
-#endif
+#endif // AMBIENCE_CORE

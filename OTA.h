@@ -1,3 +1,4 @@
+#if USE_NETWORK && USE_OTA
 #ifndef AMBIENCE_OTA
 #define AMBIENCE_OTA
 
@@ -85,6 +86,5 @@ namespace Ambience
     ArduinoOTA.handle();
   }
 }
-
-
-#endif
+#endif // AMBIENCE_OTA
+#endif // USE_NETWORK && USE_OTA

@@ -201,7 +201,7 @@ namespace Ambience
     // initialize buffer
     for (int i = 0; i < NUM_LEDS; i++)
     {
-      buffer[i] = Color();
+      buffer[i] = Color(0, 0, 0, 0);
     }
 
     // set defaults
