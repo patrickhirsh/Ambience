@@ -42,16 +42,17 @@ initialize the webserver. */
 // ==================== LED Count ==================== //
 
 /* Number of LEDs installed in a variety of locations in my apartment.
-NUM_LEDS should be definied as the corresponding definition befow when
+NUM_LEDS should be defined as the corresponding definition befow when
 flashing firmware to that node. */
-#define LED_COUNT_TEST_STRIP 10
-#define LED_COUNT_KITCHEN_ISLAND 122
-#define LED_COUNT_DESK 100
-#define LED_COUNT_TV_STAND 100
-#define LED_COUNT_SERVER_RACK 100
+#define NUM_LED_TEST_STRIP_LONG 20
+#define NUM_LED_TEST_STRIP 10
+#define NUM_LED_KITCHEN_ISLAND 122
+#define NUM_LED_DESK 100
+#define NUM_LED_TV_STAND 100
+#define NUM_LED_SERVER_RACK 100
 
 // Number of LEDs
-#define NUM_LEDS LED_COUNT_TEST_STRIP
+#define NUM_LEDS 10
 
 // ESP libraries
 #if USE_OTA

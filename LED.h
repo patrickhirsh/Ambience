@@ -193,7 +193,7 @@ namespace Ambience
 
   LEDStrip::LEDStrip()
   {
-    leds = Adafruit_NeoPixel((uint16_t)NUM_LEDS, (uint16_t)DATA_PIN, (neoPixelType)NEOPIXEL_FLAGS);
+    leds = Adafruit_NeoPixel(NUM_LEDS, DATA_PIN, NEOPIXEL_FLAGS);
     leds.begin();
     leds.clear();
     leds.show();
