@@ -206,7 +206,7 @@ namespace Ambience
       else if (server->argName(i) == "H")
       {
         int val = server->arg(i).toInt();
-        if((val == 0 && server->arg(i) != "0") || val < 0 || val > 65535)
+        if((val == 0 && server->arg(i) != "0") || val < 0 || val > std::numeric_limits<uint16_t>::max())
         {
           LOG_INVALID_ARG(server->uri(), server->argName(i));
           LOG_RESPONSE(RESPONSE_BAD_REQUEST);
@@ -220,14 +220,13 @@ namespace Ambience
       else if (server->argName(i) == "S" || server->argName(i) == "V" || server->argName(i) == "W")
       {
         int val = server->arg(i).toInt();
-        if((val == 0 && server->arg(i) != "0") || val < 0 || val > 255)
+        if((val == 0 && server->arg(i) != "0") || val < 0 || val > std::numeric_limits<uint8_t>::max())
         {
           LOG_INVALID_ARG(server->uri(), server->argName(i));
           LOG_RESPONSE(RESPONSE_BAD_REQUEST);
           server->send(RESPONSE_BAD_REQUEST);
           return;
         }
-        if (server->argName(i) == "H") { h = val; }
         if (server->argName(i) == "S") { s = val; }
         if (server->argName(i) == "V") { v = val; }
         if (server->argName(i) == "W") { w = val; }
@@ -358,7 +357,7 @@ namespace Ambience
       if (server->argName(i) == "Brightness")
       {
         int val = server->arg(i).toInt();
-        if((val == 0 && server->arg(i) != "0") || val < 0 || val > 255)
+        if((val == 0 && server->arg(i) != "0") || val < 0 || val > std::numeric_limits<uint8_t>::max())
         {
           LOG_INVALID_ARG(server->uri(), server->argName(i));
           LOG_RESPONSE(RESPONSE_BAD_REQUEST);

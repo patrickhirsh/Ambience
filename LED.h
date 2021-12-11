@@ -160,7 +160,6 @@ namespace Ambience
 
       // ==================== M_Rainbow ==================== //
 
-    /* TODO: Hue is broken... Fix that
 
       class M_Rainbow : public Mode 
       {
@@ -168,22 +167,20 @@ namespace Ambience
         ~M_Rainbow() {}
         void Update(Color* buffer, const Color &color1, const Color &color2, const Color &color3)
         {
-          hue++;
-          if (hue > 255) { hue = 0;}
+          hue+=10;
+          if (hue > std::numeric_limits<uint16_t>::max()) { hue = 0;}
           for (int i = 0; i < NUM_LEDS; i++)
           {
-            buffer[i] = CHSV(hue, 255, 255);
+            buffer[i] = Color(hue, std::numeric_limits<uint8_t>::max(), std::numeric_limits<uint8_t>::max(), 0);
           }
         }
       };
-      */
 
     private:
       Adafruit_NeoPixel   leds;
 
       Color               buffer[NUM_LEDS];   // raw led buffer (no post-processing)
       bool                active;             // should the leds be turned on?
-      float               brightness;         // 0.0f - 1.0f brightness value
       Mode*               mode;               // current mode
       String              modeName;           // name of the current mode
   };
@@ -245,7 +242,7 @@ namespace Ambience
   {
     // This maybe isn't the best way to declare a definitive list of supported modes... Might revisit this
     if (Name == "Color") { delete mode; mode = new M_Color(); modeName = Name; return true; }
-    //if (Name == "Rainbow") { delete mode; mode = new M_Rainbow(); modeName = Name; return true; }
+    if (Name == "Rainbow") { delete mode; mode = new M_Rainbow(); modeName = Name; return true; }
     return false;
   }
 

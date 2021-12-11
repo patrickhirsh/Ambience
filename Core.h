@@ -51,6 +51,8 @@ flashing firmware to that node. */
 #define NUM_LED_TV_STAND 100
 #define NUM_LED_SERVER_RACK 100
 
+#include <limits>
+
 // Number of LEDs
 #define NUM_LEDS 100
 
