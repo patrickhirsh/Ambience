@@ -191,9 +191,9 @@ namespace Ambience
   LEDStrip::Mode::~Mode() {}
 
 
-  LEDStrip::LEDStrip()
+  LEDStrip::LEDStrip() :
+    leds(NUM_LEDS, DATA_PIN, NEOPIXEL_FLAGS)
   {
-    leds = Adafruit_NeoPixel(NUM_LEDS, DATA_PIN, NEOPIXEL_FLAGS);
     leds.begin();
     leds.clear();
     leds.show();

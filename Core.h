@@ -52,7 +52,7 @@ flashing firmware to that node. */
 #define NUM_LED_SERVER_RACK 100
 
 // Number of LEDs
-#define NUM_LEDS 10
+#define NUM_LEDS 100
 
 // ESP libraries
 #if USE_OTA
