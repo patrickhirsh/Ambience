@@ -20,6 +20,9 @@ Node will operate in offline mode and not attempt to connect to wifi or
 initialize the webserver. */
 #define USE_NETWORK 1
 
+// Minimum tick time in miliseconds (17ms ~ 60hz, 8ms ~120hz)
+#define TICKRATE 8
+
 // Serial BAUD rate
 #define BAUDRATE 115200
 
@@ -143,6 +146,88 @@ namespace Ambience
     // Success!
     LOGW("Wifi initialized with IP ");
     LOG(WiFi.localIP());
+  }
+
+  // ==================== Time Management ==================== //
+
+  namespace Timing
+  {
+
+  }
+
+
+  // ==================== Tick Manager ==================== //
+
+  /* A TickManager guarantees a minimum amount of time spent in its critical section between calls to StartTick() and EndTick()
+  in order to impose a minimum tick time. This can be used to throttle tick functions. TickManager takes no action if execution 
+  in its critical section exceeds the minimum time. */
+  class TickManager
+  {
+    public:
+      TickManager           (uint8_t TickTime);   // initializes a TickManager with a minimum tick time (in milliseconds)
+      ~TickManager          () {}
+      void StartTick        ();                   // Begin TickManager critical section
+      void EndTick          ();                   // End TickManager critical section
+      uint8_t GetTickTime   ();                   // returns the current ticktime (in milliseconds)
+      void SetTickTime      (uint8_t TickTime);   // sets a ticktime (in milliseconds)
+
+    private:
+      uint32_t              tickTime;             // minimum time per tick (in microseconds)
+      uint64_t              tickStart;            // time at the start of the current tick (in microseconds)
+      struct timeval        tv;                   // timeval object
+
+      // profiling
+      uint32_t              tickSum;              // sum of tick times used to calculate avg ticktime (in microseconds)
+      uint16_t              tickCount;            // number of tick times added to tickSum
+
+  };
+
+  TickManager::TickManager(uint8_t TickTime)
+  {
+    tickTime = TickTime * 1000;
+    tickStart = 0;
+    tickSum = 0;
+    tickCount = 0;
+  }
+
+  void TickManager::StartFrame()
+  {
+    gettimeofday(&tv, NULL);
+    tickStart = (uint64_t)tv.tv_sec * 1000000L + (uint64_t)tv.tv_usec;
+  }
+
+  void TickManager::EndFrame()
+  {
+    gettimeofday(&tv, NULL);
+    uint64_t tickEnd = (uint64_t)tv.tv_sec * 1000000L + (uint64_t)tv.tv_usec;
+    uint32_t tickDelta = tickEnd - tickStart;
+    if (tickDelta < tickTime)
+    {
+      delay((tickTime - tickDelta) / 1000);
+      tickSum += tickTime;
+    }
+    else
+    {
+      tickSum += tickDelta;
+    }
+    tickCount++;
+
+    if (tickCount >= (1000 / (tickTime / 1000)))
+      {
+        LOGF("Avg. TickRate: %d/s\n", (((float)tickSum / (float)tickTime) / (float)1000));
+        tickSum = 0;
+        tickCount = 0;
+      }
+  }
+
+  uint8_t TickManager::GetTickTime()
+  { 
+    return (TickTime / 1000); 
+  }
+
+  void TickManager:::SetTickTime(uint8_t TickTime)
+  { 
+    tickTime = TickTime * 1000; 
   }
 }
 #endif // AMBIENCE_CORE

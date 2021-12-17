@@ -9,24 +9,24 @@ namespace Ambience
   class LEDStrip
   {
     public:
-      LEDStrip            ();
-      ~LEDStrip           () {}
-      void                Update();
+      LEDStrip        ();
+      ~LEDStrip       () {}
+      void            Update();
 
-      bool                SetMode(String mode);
-      String              GetMode();
-      void                SetBrightness(uint8_t brightness);
-      uint8_t             GetBrightness();
-      void                SetActive(bool isActive);
-      bool                GetActive();
+      bool            SetMode(String mode);
+      String          GetMode();
+      void            SetBrightness(uint8_t brightness);
+      uint8_t         GetBrightness();
+      void            SetActive(bool isActive);
+      bool            GetActive();
 
       class Color
       {
         public:
-          uint16_t   H = 0;
-          uint8_t   S = 0;
-          uint8_t   V = 0;
-          uint8_t   W = 0;
+          uint16_t    H = 0;
+          uint8_t     S = 0;
+          uint8_t     V = 0;
+          uint8_t     W = 0;
 
           Color() {}
           Color(uint16_t h, uint8_t s, uint8_t v, uint8_t w = 0) 
@@ -167,7 +167,7 @@ namespace Ambience
         ~M_Rainbow() {}
         void Update(Color* buffer, const Color &color1, const Color &color2, const Color &color3)
         {
-          hue+=10;
+          hue+=100;
           if (hue > std::numeric_limits<uint16_t>::max()) { hue = 0;}
           for (int i = 0; i < NUM_LEDS; i++)
           {
