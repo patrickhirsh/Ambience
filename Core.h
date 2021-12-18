@@ -152,29 +152,128 @@ namespace Ambience
   // ==================== Tick Manager ==================== //
   class TickManager
   {
-    // Singleton
     public:
       static TickManager&     GetInstance();
       TickManager             (TickManager const&) = delete;   // don't implement
       void operator=          (TickManager const&) = delete;   // don't implement
-
-    private:
-      TickManager             ();
-      ~TickManager            () {}
-
-
-    public:
       uint8_t                 GetTickTime();                   // returns the current ticktime (in milliseconds)
       void                    SetTickTime(uint8_t TickTime);   // sets a ticktime (in milliseconds)
       void                    Tick();                          // execute exactly once per tick in the core loop
 
     private:
+      TickManager             ();
+      ~TickManager            () {}
       uint32_t                tickTime;                        // minimum time per tick (in microseconds)
-      uint64_t                tickStart;                       // time at the start of the current tick (in microseconds)
-      struct timeval          tv;                              // timeval object
 
-      float                   getTickRate();                   // returns ticks per second based on current tickTime
+      uint8_t                 tickCounter = 0;
+
+
+      /* Simple timer that tracks time passed between invocations of its "Delta()" method.
+      This timer also maintains a moving historical average of the delta values it yields over time. */
+      class Timer
+      {
+        private:
+          /* Very simple FIFO circular buffer used to keep a moving historical average on tick times in the TickManager */
+          class TickTimeBuffer
+          {
+            private:
+              // adjust this for greater accuracy when averaging the buffer at the cost of memory
+              static const uint32_t CAPACITY = 200;
+
+            public:
+              TickTimeBuffer   () { Clear(); }                          // initializes a buffer of size CAPACITY to 0 values
+              uint16_t          Capacity() const { return CAPACITY; }   // returns the capacity of the buffer
+
+              /* returns an average of all the buffer values */
+              uint32_t GetBufferAverage()
+              {
+                uint32_t sum = 0U;
+                for (uint16_t i = 0; i < Capacity(); i++) 
+                {
+                  sum += buffer[i];
+                }
+                return sum / CAPACITY;
+              }
+
+              /* Resets the head and buffer to all 0 values */ 
+              void Clear() 
+              { 
+                for (uint16_t i = 0; i < Capacity(); i++) 
+                { 
+                  buffer[i] = 0U; 
+                }
+                head = 0U; 
+              }
+
+              /* Pushs a new value to the buffer. If CAPACITY has been reached, the oldest value will be overriden. */ 
+              void Push(uint32_t& item) 
+              { 
+                buffer[head] = item; 
+                head++; 
+                if (head >= CAPACITY) { head = 0U; }
+              }
+
+            private:
+              uint32_t          buffer[CAPACITY];
+              uint16_t          head = 0U;
+          };
+          TickTimeBuffer buffer;
+
+        public:
+          /* Default Constructor */
+          Timer() 
+          { 
+            gettimeofday(&tv, NULL);
+            lastTimestamp = (uint64_t)tv.tv_sec * 1000000L + (uint64_t)tv.tv_usec; 
+          }
+          
+          /* returns the time (in microseconds) since CaptureDelta was last invoked.
+          On first invocation, it returns the time (in microseconds) since the Timer was initialized. */
+          uint32_t GetCurrentDelta()
+          {
+            gettimeofday(&tv, NULL);
+            uint32_t currentTimestamp = (uint32_t)tv.tv_sec * 1000000L + (uint32_t)tv.tv_usec;
+            uint32_t delta = lastTimestamp > currentTimestamp ?
+              (std::numeric_limits<uint32_t>::max() - lastTimestamp) + currentTimestamp :   // check for overflow!
+              currentTimestamp - lastTimestamp;
+              return delta;
+          }
+
+          /* captures the total time (in microseconds) of the current tick and pushes it to the moving average buffer.
+          Resets currentTimestamp to track the next tick time. */
+          void CaptureDelta()
+          {
+            gettimeofday(&tv, NULL);
+            uint32_t currentTimestamp = (uint32_t)tv.tv_sec * 1000000L + (uint32_t)tv.tv_usec;
+            uint32_t delta = lastTimestamp > currentTimestamp ?
+              (std::numeric_limits<uint32_t>::max() - lastTimestamp) + currentTimestamp :   // check for overflow!
+              currentTimestamp - lastTimestamp;
+
+            lastTimestamp = currentTimestamp;
+            buffer.Push(delta);
+          }
+
+          /* returns the average tick time over the moving historical average in milliseconds */
+          float GetAvgTickTime()
+          {
+            // buffer average (microseconds) to milliseconds
+            return (float)buffer.GetBufferAverage() / (float)1000;
+          }
+
+          /* returns the average ticks / sec over the moving historical average */
+          float GetAvgTickRate()
+          {
+            float avgTickTime = GetAvgTickTime() ;    // in milliseconds
+            return (float)1000 / avgTickTime;         // number of avgTickTime ticks in a second
+          }
+        
+        private:
+          uint64_t lastTimestamp;
+          struct timeval tv;
+      };
+      Timer timer;
   };
+
 
   TickManager& TickManager::GetInstance()
   {
@@ -182,11 +281,12 @@ namespace Ambience
     return singleton;
   }
 
+
   TickManager::TickManager()
   {
     tickTime = TICKTIME * 1000;
-    tickStart = 0;
   }
+
 
   uint8_t TickManager::GetTickTime()
   { 
@@ -194,35 +294,29 @@ namespace Ambience
     return (tickTime / 1000); 
   }
 
+
   void TickManager::SetTickTime(uint8_t TickTime)
   { 
     tickTime = TickTime * 1000; 
   }
 
+
   void TickManager::Tick()
   {
-    gettimeofday(&tv, NULL);
-    uint64_t tickEnd = (uint64_t)tv.tv_sec * 1000000L + (uint64_t)tv.tv_usec;
-    if (tickStart > tickEnd)
-    {
-      LOG("Error: TickManager timer overflow detected!");
-      tickStart = tickEnd;
-    }
-    uint32_t tickDelta = tickEnd - tickStart;
+    uint32_t tickDelta = timer.GetCurrentDelta();
     if (tickDelta < tickTime)
     {
-      delay((tickTime - tickDelta) / 1000);
+      delayMicroseconds(tickTime - tickDelta);
     }
-  }
+    timer.CaptureDelta();
 
-  float TickManager::getTickRate()
-  {
-    /*
-        tickTime (in microseconds) / 1000 = tickTime (in milliseconds)
-        ...
-        1000ms / tickTime (in milliseconds) = ticks per second
-    */
-    return (float)1000 / (float)(tickTime / 1000);
+    // temporary (until this is implemented app-side)
+    tickCounter++;
+    if (tickCounter >= 200)
+    {
+      LOGF("Avg. Refresh Rate: %.1f ticks / second\n", timer.GetAvgTickRate());
+      tickCounter = 0;
+    }
   }
 }
 #endif // AMBIENCE_CORE
