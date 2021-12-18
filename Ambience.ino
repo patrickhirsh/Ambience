@@ -4,7 +4,6 @@
 #include "Server.h"
 
 
-Ambience::TickManager* TickManager;
 Ambience::LEDStrip* Leds;
 
 #if USE_NETWORK && USE_OTA
@@ -21,7 +20,6 @@ void setup()
   // Init local hardware and led systems
   Ambience::InitHardware();
   Ambience::InitLogging();
-  TickManager = new Ambience::TickManager(TICKRATE);
   Leds = new Ambience::LEDStrip();
 
   // Init network systems
@@ -38,7 +36,6 @@ void setup()
 
 void loop() 
 {
-  TickManager->StartFrame();
 
 #if USE_NETWORK && USE_OTA
   Ota->Update();
@@ -50,5 +47,5 @@ void loop()
 
   Leds->Update();
   
-  TickManager->EndFrame();
+  Ambience::TickManager::GetInstance().Tick();
 }
