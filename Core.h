@@ -167,7 +167,9 @@ namespace Ambience
       ~TickManager            () {}
       uint32_t                tickTime;                                             // minimum time per tick (in microseconds)
 
-      uint8_t                 tickCounter = 0;
+#if DEBUG
+      uint16_t                tickCounter = 0;                                      // for performance stats logging
+#endif
 
 
       /* Simple timer that tracks time passed between invocations of its "Delta()" method.
@@ -308,13 +310,17 @@ namespace Ambience
     }
     timer.ResetDelta();
 
-    // temporary (until this is implemented app-side)
+#if DEBUG
     tickCounter++;
-    if (tickCounter >= 200)
+    if (tickCounter >= ((1000 / (tickTime / 1000)) * 5))   // print every 5 seconds
     {
-      LOGF("Avg. Refresh Rate: %.1f ticks / second\n", timer.GetAvgTickRate());
+      LOGF("[Tick: %.2fms/", timer.GetAvgTickTime());
+      LOGF("%.2fms", (float)tickTime / (float)1000);
+      LOGF(" (%.2f%% of target)] ", ((float)(tickTime / 1000) / (float)(timer.GetAvgTickTime())) * 100);
+      LOGF("[TickRate: %.1f]\n", timer.GetAvgTickRate());
       tickCounter = 0;
     }
+#endif
   }
 }
 #endif // AMBIENCE_CORE
