@@ -49,6 +49,7 @@ namespace Ambience
 
   // ==================== Usage ==================== //
 
+      // TODO: This should be HTML...
       static constexpr char* USAGE =
         "\n"
         "Ambience Device Version " VERSION "\n"
@@ -71,7 +72,7 @@ namespace Ambience
         "  /GetColor - gets the color (HSVW value) of the color indexed at 'Color'\n"
         "    - Color=<1..3>\n"
         "\n"
-        "      RETURNS: {'Color': [<0..65535>,<0..255>,<0..255>,<0.255>]}\n"
+        "      RETURNS: {'Color': {'H':<0..65535>,'S':<0..255>,'V':<0..255>,'W':<0.255>} }\n"
         "\n"
         "\n"
         "  /SetMode - sets the mode. Expects a valid string 'Mode' name\n"
@@ -105,6 +106,19 @@ namespace Ambience
         "  /GetActive - gets the active (power) state of the leds\n"
         "\n"
         "      RETURNS: {'Active':<bool>}\n"
+        "\n"
+        "\n"
+        "  /GetState - gets all the current state information of the device in a single request\n"
+        "\n"
+        "      RETURNS:\n"
+        "          {\n"
+        "              'Color1': {'H':<0..65535>,'S':<0..255>,'V':<0..255>,'W':<0.255>},\n"
+        "              'Color2': {'H':<0..65535>,'S':<0..255>,'V':<0..255>,'W':<0.255>},\n"
+        "              'Color3': {'H':<0..65535>,'S':<0..255>,'V':<0..255>,'W':<0.255>},\n"
+        "              'Mode':<Mode>,\n"
+        "              'Brightness':<0..255>,\n"
+        "              'Active':<bool>\n"
+        "          }\n"
         "\n"
         "\n"
         "  /GetStats - gets the current performance metrics of the leds\n"
