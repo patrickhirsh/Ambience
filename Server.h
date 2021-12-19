@@ -32,99 +32,20 @@ namespace Ambience
 
       static void   HandleNotFound();
       static void   HandleRoot();
-      static void   HandleSetColor();
       static void   HandleGetColor();
-      static void   HandleSetMode();
+      static void   HandleSetColor();
       static void   HandleGetMode();
-      static void   HandleSetBrightness();
+      static void   HandleGetModes();
+      static void   HandleSetMode();
       static void   HandleGetBrightness();
-      static void   HandleSetActive();
+      static void   HandleSetBrightness();
       static void   HandleGetActive();
+      static void   HandleSetActive();
       static void   HandleGetStats();
 
     private:
       static WebServer* server;
       static LEDStrip* leds;
-
-
-  // ==================== Usage ==================== //
-
-      // TODO: This should be HTML...
-      static constexpr char* USAGE =
-        "\n"
-        "Ambience Device Version " VERSION "\n"
-        "\n"
-        "\n"
-        "\n"
-        "API Reference:\n"
-        "\n"
-        "\n"
-        "  /SetColor - sets the color (HSVW or HSV value) of the color indexed at 'Color'\n"
-        "    - Color=<1..3>\n"
-        "    - H=<0..65535>\n"
-        "    - S=<0..255>\n"
-        "    - V=<0..255>\n"
-        "    - W=<0..255> (Optional)\n"
-        "\n"
-        "      RETURNS: none\n"
-        "\n"
-        "\n"
-        "  /GetColor - gets the color (HSVW value) of the color indexed at 'Color'\n"
-        "    - Color=<1..3>\n"
-        "\n"
-        "      RETURNS: {'Color': {'H':<0..65535>,'S':<0..255>,'V':<0..255>,'W':<0.255>} }\n"
-        "\n"
-        "\n"
-        "  /SetMode - sets the mode. Expects a valid string 'Mode' name\n"
-        "    - Mode=<Mode>\n"
-        "\n"
-        "      RETURNS: none\n"
-        "\n"
-        "\n"
-        "  /GetMode - gets the current mode\n"
-        "\n"
-        "      RETURNS: {'Mode':<Mode>}\n"
-        "\n"
-        "\n"
-        "  /SetBrightness - sets the brightness\n"
-        "    - Brightness=<0..255>\n"
-        "\n"
-        "      RETURNS: none\n"
-        "\n"
-        "\n"
-        "  /GetBrightness - gets the current brightness\n"
-        "\n"
-        "      RETURNS: {'Brightness':<0..255>}\n"
-        "\n"
-        "\n"
-        "  /SetActive - sets the active (power) state of the leds\n"
-        "    - Active=<bool>\n"
-        "\n"
-        "      RETURNS: none\n"
-        "\n"
-        "\n"
-        "  /GetActive - gets the active (power) state of the leds\n"
-        "\n"
-        "      RETURNS: {'Active':<bool>}\n"
-        "\n"
-        "\n"
-        "  /GetState - gets all the current state information of the device in a single request\n"
-        "\n"
-        "      RETURNS:\n"
-        "          {\n"
-        "              'Color1': {'H':<0..65535>,'S':<0..255>,'V':<0..255>,'W':<0.255>},\n"
-        "              'Color2': {'H':<0..65535>,'S':<0..255>,'V':<0..255>,'W':<0.255>},\n"
-        "              'Color3': {'H':<0..65535>,'S':<0..255>,'V':<0..255>,'W':<0.255>},\n"
-        "              'Mode':<Mode>,\n"
-        "              'Brightness':<0..255>,\n"
-        "              'Active':<bool>\n"
-        "          }\n"
-        "\n"
-        "\n"
-        "  /GetStats - gets the current performance metrics of the leds\n"
-        "\n"
-        "      {'Current TickTime':<TickTime (ms)>, 'Average TickTime':<Avg TickTime (ms)>, 'Average TickRate':<Avg TickRate (ticks/sec)>}\n"
-        ;
   };
 
   WebServer* Server::server = new WebServer(80);
@@ -135,20 +56,6 @@ namespace Ambience
   {
     leds = stripToControl;
 
-    // TODO: Possibly support mDNS device discovery?
-    /*
-    // start MDNS and broadcast service
-    if (MDNS.begin("Ambience." + WiFi.localIP()))
-    {
-      LOG("mDNS initialized");
-      MDNS.addService("_ambience", "_tcp", 80);
-    }
-    else
-    {
-      LOG("MDNS failed to start");
-    }
-    */
-
     // bind handles
     server->onNotFound(Server::HandleNotFound);
     server->on("/", Server::HandleRoot);
@@ -156,6 +63,7 @@ namespace Ambience
     server->on("/GetColor", Server::HandleGetColor);
     server->on("/SetMode", Server::HandleSetMode);
     server->on("/GetMode", Server::HandleGetMode);
+    server->on("/GetModes", Server::HandleGetModes);
     server->on("/SetBrightness", Server::HandleSetBrightness);
     server->on("/GetBrightness", Server::HandleGetBrightness);
     server->on("/SetActive", Server::HandleSetActive);
@@ -196,12 +104,78 @@ namespace Ambience
   void Server::HandleRoot() 
   {
     LOG_REQUEST(server->uri());
-    LOG_RESPONSE(RESPONSE_OK);
-    server->send(RESPONSE_OK, "text/plain", USAGE);
+    
+    // file exists?
+    if (!SPIFFS.exists("/WebserverAPI.html"))
+    {
+      const char* response = "Error: couldn't locate WebserverAPI.html in SPIFFS file system!";
+      LOG_RESPONSE_PAYLOAD(RESPONSE_OK, response);
+      server->send(RESPONSE_OK, "text/plain", response);
+      return;
+    }
+
+    // can we open it?
+    File file = SPIFFS.open("/WebserverAPI.html");
+    if (!file)
+    {
+      const char* response = "Error: failed to read WebserverAPI.html from SPIFFS file system";
+      LOG_RESPONSE_PAYLOAD(RESPONSE_OK, response);
+      server->send(RESPONSE_OK, "text/plain", response);
+      return;
+    }
+
+    // read html from file and send as response
+    char fileBuffer[file.size()] = {};
+    uint16_t i = 0;
+    while(file.available())
+    {
+      fileBuffer[i] = file.read();
+      i++;
+    }
+    fileBuffer[i] = '\0';
+    file.close();
+    LOG_RESPONSE_PAYLOAD(RESPONSE_OK, fileBuffer);
+    server->send(RESPONSE_OK, "text/html", fileBuffer);
   }
 
   
   // ==================== Colors ==================== //
+
+  void Server::HandleGetColor()
+  {
+    LOG_REQUEST(server->uri());
+
+    for (int i = 0; i < server->args(); i++)
+    {
+      if (server->argName(i) == "Color")
+      {
+        int colorIndex = server->arg(i).toInt();
+        if(colorIndex < 1 || colorIndex > 3)
+        {
+          LOG_INVALID_ARG(server->uri(), server->argName(i));
+          LOG_RESPONSE(RESPONSE_BAD_REQUEST);
+          server->send(RESPONSE_BAD_REQUEST);
+          return;
+        }
+
+        StaticJsonDocument<64> payload;
+        JsonArray color = payload.createNestedArray("Color");
+        if (colorIndex == 1) { color.add(leds->Color1.H); color.add(leds->Color1.S); color.add(leds->Color1.V); color.add(leds->Color1.W); }
+        if (colorIndex == 2) { color.add(leds->Color2.H); color.add(leds->Color2.S); color.add(leds->Color2.V); color.add(leds->Color2.W); }
+        if (colorIndex == 3) { color.add(leds->Color3.H); color.add(leds->Color3.S); color.add(leds->Color3.V); color.add(leds->Color3.W); }
+        String serializedPayload;
+        serializeJson(payload, serializedPayload);
+        LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
+        server->send(RESPONSE_OK, "json", serializedPayload);
+        return;
+      }
+    }
+
+    LOG_MISSING_ARG(server->uri(), "Color");
+    LOG_RESPONSE(RESPONSE_BAD_REQUEST);
+    server->send(RESPONSE_BAD_REQUEST);
+  }
+
 
   void Server::HandleSetColor()
   {
@@ -287,43 +261,32 @@ namespace Ambience
   }
 
 
-  void Server::HandleGetColor()
+  // ==================== Modes ==================== //
+
+  void Server::HandleGetMode()
   {
     LOG_REQUEST(server->uri());
-
-    for (int i = 0; i < server->args(); i++)
-    {
-      if (server->argName(i) == "Color")
-      {
-        int colorIndex = server->arg(i).toInt();
-        if(colorIndex < 1 || colorIndex > 3)
-        {
-          LOG_INVALID_ARG(server->uri(), server->argName(i));
-          LOG_RESPONSE(RESPONSE_BAD_REQUEST);
-          server->send(RESPONSE_BAD_REQUEST);
-          return;
-        }
-
-        StaticJsonDocument<64> payload;
-        JsonArray color = payload.createNestedArray("Color");
-        if (colorIndex == 1) { color.add(leds->Color1.H); color.add(leds->Color1.S); color.add(leds->Color1.V); color.add(leds->Color1.W); }
-        if (colorIndex == 2) { color.add(leds->Color2.H); color.add(leds->Color2.S); color.add(leds->Color2.V); color.add(leds->Color2.W); }
-        if (colorIndex == 3) { color.add(leds->Color3.H); color.add(leds->Color3.S); color.add(leds->Color3.V); color.add(leds->Color3.W); }
-        String serializedPayload;
-        serializeJson(payload, serializedPayload);
-        LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
-        server->send(RESPONSE_OK, "json", serializedPayload);
-        return;
-      }
-    }
-
-    LOG_MISSING_ARG(server->uri(), "Color");
-    LOG_RESPONSE(RESPONSE_BAD_REQUEST);
-    server->send(RESPONSE_BAD_REQUEST);
+    StaticJsonDocument<64> payload;
+    payload["Mode"] = leds->GetMode();
+    String serializedPayload;
+    serializeJson(payload, serializedPayload);
+    LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
+    server->send(RESPONSE_OK, "json", serializedPayload);
   }
 
 
-  // ==================== Modes ==================== //
+  void Server::HandleGetModes()
+  {
+    LOG_REQUEST(server->uri());
+    StaticJsonDocument<512> payload;
+    JsonArray modes = payload.createNestedArray("Modes");
+    leds->GetAllModes(modes);
+    String serializedPayload;
+    serializeJson(payload, serializedPayload);
+    LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
+    server->send(RESPONSE_OK, "json", serializedPayload);
+  }
+
 
   void Server::HandleSetMode()
   {
@@ -356,19 +319,19 @@ namespace Ambience
   }
 
 
-  void Server::HandleGetMode()
+  // ==================== Brightness ==================== //
+
+  void Server::HandleGetBrightness()
   {
     LOG_REQUEST(server->uri());
-    StaticJsonDocument<64> payload;
-    payload["Mode"] = leds->GetMode();
+    StaticJsonDocument<16> payload;
+    payload["Brightness"] = (int)(leds->GetBrightness());
     String serializedPayload;
     serializeJson(payload, serializedPayload);
     LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
     server->send(RESPONSE_OK, "json", serializedPayload);
   }
 
-
-  // ==================== Brightness ==================== //
 
   void Server::HandleSetBrightness()
   {
@@ -395,19 +358,19 @@ namespace Ambience
   }
 
 
-  void Server::HandleGetBrightness()
+  // ==================== Active ==================== //
+
+  void Server::HandleGetActive()
   {
     LOG_REQUEST(server->uri());
     StaticJsonDocument<16> payload;
-    payload["Brightness"] = (int)(leds->GetBrightness());
+    payload["Active"] = leds->GetActive();
     String serializedPayload;
     serializeJson(payload, serializedPayload);
     LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
     server->send(RESPONSE_OK, "json", serializedPayload);
   }
 
-
-  // ==================== Active ==================== //
 
   void Server::HandleSetActive()
   {
@@ -440,18 +403,6 @@ namespace Ambience
     LOG_MISSING_ARG(server->uri(), "Active");
     LOG_RESPONSE(RESPONSE_BAD_REQUEST);
     server->send(RESPONSE_BAD_REQUEST);
-  }
-
-
-  void Server::HandleGetActive()
-  {
-    LOG_REQUEST(server->uri());
-    StaticJsonDocument<16> payload;
-    payload["Active"] = leds->GetActive();
-    String serializedPayload;
-    serializeJson(payload, serializedPayload);
-    LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
-    server->send(RESPONSE_OK, "json", serializedPayload);
   }
 
 

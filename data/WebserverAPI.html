@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <body style="font-family:Verdana">
+      <font size="-1">
+      <p style="color:rgb(0, 0, 0);">
+        <font size="+2"><b>AMBIENCE NODE</b></font><br>
+        <b style="margin-left: 20px">Webserver API</b>
+      </p>
+      <br>
+      <br>
+      <pstyle="font-family:'Courier New'>
+        <b style="color:rgb(255, 0, 0);">/GetColor?Color=&lt;uint8_t&gt;</b><br>
+        <i>Gets the color (HSVW value) of the color indexed at 'Color'.</i><br>
+        <p style="margin-left: 40px">
+          <b>Returns:</b><br>
+          {'Color': {'H':&lt;uint16_t&gt;, 'S':&lt;uint8_t&gt;, 'V':&lt;uint8_t&gt;, 'W':&lt;uint8_t&gt;} }<br>
+        </p>
+      </p>
+      <br>
+      <p>
+        <b style="color:rgb(255, 0, 0);">/SetColor?Color=&lt;uint8_t&gt;&H=&lt;uint16_t&gt;&S=&lt;uint8_t&gt;&V=&lt;uint8_t&gt;&W=&lt;uint8_t&gt;</b><br>
+        <i>Sets the color (HSVW or HSV value) of the color indexed at 'Color' with 'H', 'S', 'V', and optional 'W' values.</i><br>
+        <p style="margin-left: 40px">
+          <b>Returns:</b><br>
+          None<br>
+        </p>
+      </p>
+      <br>
+      <p>
+        <b style="color:rgb(255, 0, 0);">/GetMode</b><br>
+        <i>Gets the mode the LEDs are currently in.</i><br>
+        <p style="margin-left: 40px">
+          <b>Returns:</b><br>
+          {'Mode':&lt;string&gt;}<br>
+        </p>
+      </p>
+      <br>
+      <p>
+        <b style="color:rgb(255, 0, 0);">/GetModes</b><br>
+        <i>Gets all LED modes available for this device.</i><br>
+        <p style="margin-left: 40px">
+          <b>Returns:</b><br>
+          {'Modes':[&lt;string&gt;]}<br>
+        </p>
+      </p>
+      <br>
+      <p>
+        <b style="color:rgb(255, 0, 0);">/SetMode?Mode=&lt;string&gt;</b><br>
+        <i>Sets the LED mode. Expects a valid string 'Mode' name.</i><br>
+        <p style="margin-left: 40px">
+          <b>Returns:</b><br>
+          None<br>
+        </p>
+      </p>
+      <br>
+      <p>
+        <b style="color:rgb(255, 0, 0);">/GetBrightness</b><br>
+        <i>Gets the current brightness of the LEDs</i><br>
+        <p style="margin-left: 40px">
+          <b>Returns:</b><br>
+          {'Brightness':0..255}<br>
+        </p>
+      </p>
+      <br>
+      <p>
+        <b style="color:rgb(255, 0, 0);">/SetBrightness?Brightness=&lt;uint8_t&gt;</b><br>
+        <i>Sets the brightness of the LEDs</i><br>
+        <p style="margin-left: 40px">
+          <b>Returns:</b><br>
+          None<br>
+        </p>
+      </p>
+      <br>
+      <p>
+        <b style="color:rgb(255, 0, 0);">/GetActive</b><br>
+        <i>Gets the active (power) state of the LEDs</i><br>
+        <p style="margin-left: 40px">
+          <b>Returns:</b><br>
+          {'Active':&lt;bool&gt;}<br>
+        </p>
+      </p>
+      <br>
+      <p>
+        <b style="color:rgb(255, 0, 0);">/SetActive?Active=&lt;bool&gt;</b><br>
+        <i>Sets the active (power) state of the LEDs</i><br>
+        <p style="margin-left: 40px">
+          <b>Returns:</b><br>
+          None<br>
+        </p>
+      </p>
+      <br>
+      <p>
+        <b style="color:rgb(255, 0, 0);">/GetState</b><br>
+        <i>Gets all the current state information of the device in a single request</i><br>
+        <p style="margin-left: 40px">
+          <b>Returns:</b><br>
+          {<br>
+          'Color1': {'H':&lt;uint16_t&gt;,'S':&lt;uint8_t&gt;,'V':&lt;uint8_t&gt;,'W':&lt;uint8_t&gt;},<br>
+          'Color2': {'H':&lt;uint16_t&gt;,'S':&lt;uint8_t&gt;,'V':&lt;uint8_t&gt;,'W':&lt;uint8_t&gt;},<br>
+          'Color3': {'H':&lt;uint16_t&gt;,'S':&lt;uint8_t&gt;,'V':&lt;uint8_t&gt;,'W':&lt;uint8_t&gt;},<br>
+          'Mode':&lt;string&gt;,<br>
+          'Modes':[&lt;string&gt;]<br>
+          'Brightness':&lt;uint8_t&gt;,<br>
+          'Active':&lt;bool&gt;<br>
+          }
+        </p>
+      </p>
+      <br>
+      <p>
+        <b style="color:rgb(255, 0, 0);">/GetStats</b><br>
+        <i>Gets the current TickTime (ms), Average TickTime (ms) and Average TickRate (ticks per second)</i><br>
+        <p style="margin-left: 40px">
+          <b>Returns:</b><br>
+          {'Current TickTime':&lt;uint8_t&gt;, 'Average TickTime':&lt;float&gt;, 'Average TickRate':&lt;float&gt;}<br>
+        </p>
+      </p>
+      <br>
+      <br>
+      <br>
+    </font>
+  </body>
+</html>

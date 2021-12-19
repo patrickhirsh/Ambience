@@ -18,8 +18,8 @@ Ambience::Server* Server;
 void setup() 
 {
   // Init local hardware and led systems
-  Ambience::InitHardware();
   Ambience::InitLogging();
+  Ambience::InitHardware();
   Leds = new Ambience::LEDStrip();
 
   // Init network systems

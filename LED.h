@@ -10,14 +10,15 @@ namespace Ambience
   {
     public:
       LEDStrip        ();
-      ~LEDStrip       () {}
+      ~LEDStrip       ();
       void            Update();
 
-      bool            SetMode(String mode);
+      bool            SetMode(String Mode);
       String          GetMode();
-      void            SetBrightness(uint8_t brightness);
+      void            GetAllModes(JsonArray& Modes);
+      void            SetBrightness(uint8_t Brightness);
       uint8_t         GetBrightness();
-      void            SetActive(bool isActive);
+      void            SetActive(bool IsActive);
       bool            GetActive();
 
       class Color
@@ -133,13 +134,14 @@ namespace Ambience
 
       To declare and implement a new mode:
           - implement your class derriving from the LEDStrip::Mode class below
-          - add a case for your mode in LEDStrip::SetMode so it can be used at runtime
+          - add your mode to the modes array in LEDStrip's constructor so it can be used at runtime
       */
       class Mode
       {
         public:
-          virtual ~Mode() = 0;
-          virtual void Update(Color* buffer, const Color &color1, const Color &color2, const Color &color3) = 0;
+          virtual                       ~Mode() = 0;
+          virtual void                  Update(Color* buffer, const Color &color1, const Color &color2, const Color &color3) = 0;
+          virtual String                GetName() const = 0;
       };
 
 
@@ -147,14 +149,23 @@ namespace Ambience
 
       class M_Color : public Mode 
       {
-        ~M_Color() {}
-        void Update(Color* buffer, const Color &color1, const Color &color2, const Color &color3)
-        {
-          for (int i = 0; i < NUM_LEDS; i++)
+        private:
+          const String name = "Color";
+        
+        public:
+          ~M_Color() {}
+          void Update(Color* buffer, const Color &color1, const Color &color2, const Color &color3)
           {
-            buffer[i] = color1;
+            for (int i = 0; i < NUM_LEDS; i++)
+            {
+              buffer[i] = color1;
+            }
           }
-        }
+
+          String GetName() const
+          {
+            return name;
+          }
       };
 
 
@@ -163,26 +174,38 @@ namespace Ambience
 
       class M_Rainbow : public Mode 
       {
-        int hue = 0;
-        ~M_Rainbow() {}
-        void Update(Color* buffer, const Color &color1, const Color &color2, const Color &color3)
-        {
-          hue+=100;
-          if (hue > std::numeric_limits<uint16_t>::max()) { hue = 0;}
-          for (int i = 0; i < NUM_LEDS; i++)
+        private:
+          const String name = "Rainbow";
+          int hue = 0;
+
+        public:
+          ~M_Rainbow() {}
+          void Update(Color* buffer, const Color &color1, const Color &color2, const Color &color3)
           {
-            buffer[i] = Color(hue, std::numeric_limits<uint8_t>::max(), std::numeric_limits<uint8_t>::max(), 0);
+            hue+=100;
+            if (hue > std::numeric_limits<uint16_t>::max()) { hue = 0;}
+            for (int i = 0; i < NUM_LEDS; i++)
+            {
+              buffer[i] = Color(hue, std::numeric_limits<uint8_t>::max(), std::numeric_limits<uint8_t>::max(), 0);
+            }
           }
-        }
+
+          String GetName() const
+          {
+            return name;
+          }
       };
+
+      // ================================================== //
+
 
     private:
       Adafruit_NeoPixel   leds;
 
-      Color               buffer[NUM_LEDS];   // raw led buffer (no post-processing)
-      bool                active;             // should the leds be turned on?
-      Mode*               mode;               // current mode
-      String              modeName;           // name of the current mode
+      Color               buffer[NUM_LEDS];     // raw led buffer (no post-processing)
+      Mode*               modes[MAX_MODES];     // array of all supported modes
+      int                 currentModeIndex;     // index of the current mode in modes
+      bool                active;               // should the leds be turned on?
   };
 
   LEDStrip::Mode::~Mode() {}
@@ -195,27 +218,35 @@ namespace Ambience
     leds.clear();
     leds.show();
 
-    // set defaults
     active = true;
     Color1 = Color();
     Color2 = Color();
     Color3 = Color();
-    mode = new M_Color();
-    modeName = "Color";
 
-    // initialize buffer
     for (int i = 0; i < NUM_LEDS; i++)
     {
       buffer[i] = Color(0, 0, 0, 0);
-    }
-
-    // initialize strip with buffer
-    for (int i = 0; i < NUM_LEDS; i++)
-    {
       leds.setPixelColor(i, buffer[i].WRGB());
     }
 
+    // === All Supported LED Modes Must be Added Here ===
+    for (int i = 0; i < MAX_MODES; i++) { modes[i] = nullptr; }
+    currentModeIndex = 0;
+    modes[0] = new M_Color();
+    modes[1] = new M_Rainbow();
+
     LOG("LEDs Initialized");
+  }
+
+  LEDStrip::~LEDStrip()
+  {
+    int index = 0;
+    while(modes[index] != nullptr)
+    {
+      delete modes[index];
+      modes[index] = nullptr;
+      index++;
+    }
   }
 
 
@@ -224,7 +255,7 @@ namespace Ambience
     if (active)
     {
       // update buffer based on current mode and colors
-      mode->Update(buffer, Color1, Color2, Color3);
+      modes[currentModeIndex]->Update(buffer, Color1, Color2, Color3);
 
       // apply post processing step on buffer, then write to strip
       for (int i = 0; i < NUM_LEDS; i++)
@@ -238,24 +269,36 @@ namespace Ambience
   }
 
 
-  bool LEDStrip::SetMode(String Name)
+  bool LEDStrip::SetMode(String Mode)
   {
-    // This maybe isn't the best way to declare a definitive list of supported modes... Might revisit this
-    if (Name == "Color") { delete mode; mode = new M_Color(); modeName = Name; return true; }
-    if (Name == "Rainbow") { delete mode; mode = new M_Rainbow(); modeName = Name; return true; }
+    for (int i = 0; i < MAX_MODES; i++)
+    {
+      if (modes[i] == nullptr) 
+      { 
+        // end of modes.. Not found
+        return false;
+      }
+      if (modes[i]->GetName() == Mode)
+      {
+        // found!
+        currentModeIndex = i;
+        return true;
+      }
+    }
+    // end of modes.. Not found
     return false;
   }
 
 
   String LEDStrip::GetMode()
   {
-    return modeName;
+    return modes[currentModeIndex]->GetName();
   }
 
 
-  void LEDStrip::SetBrightness(uint8_t brightness)
+  void LEDStrip::SetBrightness(uint8_t Brightness)
   {
-    leds.setBrightness(brightness);
+    leds.setBrightness(Brightness);
   }
 
 
@@ -265,14 +308,25 @@ namespace Ambience
   }
 
 
-  void LEDStrip::SetActive(bool isActive)
+  void LEDStrip::GetAllModes(JsonArray& Modes)
   {
-    if (!isActive)
+    int index = 0;
+    while (modes[index] != nullptr)
+    {
+      Modes.add(modes[index]->GetName());
+      index++;
+    }
+  }
+
+
+  void LEDStrip::SetActive(bool IsActive)
+  {
+    if (!IsActive)
     {
       leds.clear();
       leds.show();
     }
-    active = isActive;
+    active = IsActive;
   }
 
 

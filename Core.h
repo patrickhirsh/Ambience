@@ -20,8 +20,8 @@ Node will operate in offline mode and not attempt to connect to wifi or
 initialize the webserver. */
 #define USE_NETWORK 1
 
-// Defaulkt minimum tick time in miliseconds (17ms ~ 60hz, 8ms ~120hz)
-#define TICKTIME 8
+// Default minimum tick time in miliseconds (17ms ~ 60hz, 8ms = 125hz, 5ms = 200hz)
+#define TICKTIME 5
 
 // Serial BAUD rate
 #define BAUDRATE 115200
@@ -41,6 +41,9 @@ initialize the webserver. */
 // Hardware flags to pass to the NEOPIXEL library (See Adafruit_NeoPixel.h)
 #define NEOPIXEL_FLAGS (NEO_GRBW + NEO_KHZ800)
 
+// Maximum number of LED modes supported
+#define MAX_MODES 64
+
 
 // ==================== LED Count ==================== //
 
@@ -54,7 +57,6 @@ flashing firmware to that node. */
 #define NUM_LED_TV_STAND 100
 #define NUM_LED_SERVER_RACK 100
 
-#include <limits>
 
 // Number of LEDs
 #define NUM_LEDS 100
@@ -65,11 +67,15 @@ flashing firmware to that node. */
 #endif // USE_OTA
 #if USE_NETWORK
 #include <ESPmDNS.h>
+#include <SPIFFS.h>
 #include <WebServer.h>
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiUdp.h>
 #endif // USE_NETWORK
+
+// Standard library
+#include <limits>
 
 // NeoPixel
 #include <Adafruit_NeoPixel.h>
@@ -80,25 +86,6 @@ flashing firmware to that node. */
 
 namespace Ambience
 {
-
-  // ==================== Hardware ==================== //
-
-  void InitHardware()
-  {
-    pinMode(EXTERN_LED, OUTPUT);
-    pinMode(BUILTIN_LED, OUTPUT);
-
-    // 3 quick LED flashes indicate boot sequence start
-    for (int i = 0; i < 3; i++)
-    {
-      PULL_LED_INDICATOR(HIGH);
-      delay(200);
-      PULL_LED_INDICATOR(LOW);
-      delay(200);
-    }
-  }
-
-
   // ==================== Logging ==================== //
 
   void InitLogging() 
@@ -119,6 +106,34 @@ namespace Ambience
   #define LOGW(m) ({})
   #define LOGF(m, v) ({})
   #endif
+
+
+  // ==================== Hardware ==================== //
+
+  void InitHardware()
+  {
+    pinMode(EXTERN_LED, OUTPUT);
+    pinMode(BUILTIN_LED, OUTPUT);
+
+    if (!SPIFFS.begin(true))
+    {
+      LOG("failed to mount SPIFFS file system");
+      ESP.restart();
+    }
+    else
+    {
+      LOG("SPIFFS file system mounted");
+    }
+
+    // 3 quick LED flashes indicate boot sequence start
+    for (int i = 0; i < 3; i++)
+    {
+      PULL_LED_INDICATOR(HIGH);
+      delay(200);
+      PULL_LED_INDICATOR(LOW);
+      delay(200);
+    }
+  }
 
 
   // ==================== WiFi ==================== //
