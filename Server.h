@@ -40,6 +40,7 @@ namespace Ambience
       static void   HandleGetBrightness();
       static void   HandleSetActive();
       static void   HandleGetActive();
+      static void   HandleGetStats();
 
     private:
       static WebServer* server;
@@ -103,7 +104,13 @@ namespace Ambience
         "\n"
         "  /GetActive - gets the active (power) state of the leds\n"
         "\n"
-        "      RETURNS: {'Active':<bool>}\n";
+        "      RETURNS: {'Active':<bool>}\n"
+        "\n"
+        "\n"
+        "  /GetStats - gets the current performance metrics of the leds\n"
+        "\n"
+        "      {'Current TickTime':<TickTime (ms)>, 'Average TickTime':<Avg TickTime (ms)>, 'Average TickRate':<Avg TickRate (ticks/sec)>}\n"
+        ;
   };
 
   WebServer* Server::server = new WebServer(80);
@@ -139,6 +146,7 @@ namespace Ambience
     server->on("/GetBrightness", Server::HandleGetBrightness);
     server->on("/SetActive", Server::HandleSetActive);
     server->on("/GetActive", Server::HandleGetActive);
+    server->on("/GetStats", Server::HandleGetStats);
 
     // start webserver
     server->begin();
@@ -426,6 +434,22 @@ namespace Ambience
     LOG_REQUEST(server->uri());
     StaticJsonDocument<16> payload;
     payload["Active"] = leds->GetActive();
+    String serializedPayload;
+    serializeJson(payload, serializedPayload);
+    LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
+    server->send(RESPONSE_OK, "json", serializedPayload);
+  }
+
+
+  // ==================== Stats ==================== //
+
+  void Server::HandleGetStats()
+  {
+    LOG_REQUEST(server->uri());
+    StaticJsonDocument<64> payload;
+    payload["Current TickTime"] = TickManager::GetInstance().GetTickTime();
+    payload["Average TickTime"] = TickManager::GetInstance().GetAvgTickTime();
+    payload["Average TickRate"] = TickManager::GetInstance().GetAvgTickRate();
     String serializedPayload;
     serializeJson(payload, serializedPayload);
     LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);

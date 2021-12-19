@@ -5,7 +5,7 @@
 // ==================== Globals ==================== //
 
 // AmbienceNode Software Version
-#define VERSION "1.2"
+#define VERSION "1.3"
 
 // Enables logging over serial port
 #define DEBUG 1
@@ -154,11 +154,13 @@ namespace Ambience
   {
     public:
       static TickManager&     GetInstance();
-      TickManager             (TickManager const&) = delete;   // don't implement
-      void operator=          (TickManager const&) = delete;   // don't implement
-      uint8_t                 GetTickTime();                   // returns the current ticktime (in milliseconds)
-      void                    SetTickTime(uint8_t TickTime);   // sets a ticktime (in milliseconds)
-      void                    Tick();                          // execute exactly once per tick in the core loop
+      TickManager             (TickManager const&) = delete;                        // don't implement
+      void operator=          (TickManager const&) = delete;                        // don't implement
+      uint8_t                 GetTickTime();                                        // returns the current ticktime (in milliseconds)
+      void                    SetTickTime(uint8_t TickTime);                        // sets a ticktime (in milliseconds)
+      float                   GetAvgTickTime() { return timer.GetAvgTickTime(); }   // average tick time over the moving historical average in milliseconds
+      float                   GetAvgTickRate() { return timer.GetAvgTickRate(); }   // average ticks / sec over the moving historical average
+      void                    Tick();                                               // execute exactly once per tick in the core loop
 
     private:
       TickManager             ();
