@@ -165,7 +165,7 @@ namespace Ambience
     private:
       TickManager             ();
       ~TickManager            () {}
-      uint32_t                tickTime;                        // minimum time per tick (in microseconds)
+      uint32_t                tickTime;                                             // minimum time per tick (in microseconds)
 
       uint8_t                 tickCounter = 0;
 
@@ -228,31 +228,25 @@ namespace Ambience
             gettimeofday(&tv, NULL);
             lastTimestamp = (uint64_t)tv.tv_sec * 1000000L + (uint64_t)tv.tv_usec; 
           }
-          
-          /* returns the time (in microseconds) since CaptureDelta was last invoked.
-          On first invocation, it returns the time (in microseconds) since the Timer was initialized. */
-          uint32_t GetCurrentDelta()
-          {
-            gettimeofday(&tv, NULL);
-            uint32_t currentTimestamp = (uint32_t)tv.tv_sec * 1000000L + (uint32_t)tv.tv_usec;
-            uint32_t delta = lastTimestamp > currentTimestamp ?
-              (std::numeric_limits<uint32_t>::max() - lastTimestamp) + currentTimestamp :   // check for overflow!
-              currentTimestamp - lastTimestamp;
-              return delta;
-          }
 
           /* captures the total time (in microseconds) of the current tick and pushes it to the moving average buffer.
           Resets currentTimestamp to track the next tick time. */
-          void CaptureDelta()
+          uint32_t CaptureDelta()
           {
             gettimeofday(&tv, NULL);
             uint32_t currentTimestamp = (uint32_t)tv.tv_sec * 1000000L + (uint32_t)tv.tv_usec;
             uint32_t delta = lastTimestamp > currentTimestamp ?
               (std::numeric_limits<uint32_t>::max() - lastTimestamp) + currentTimestamp :   // check for overflow!
               currentTimestamp - lastTimestamp;
-
-            lastTimestamp = currentTimestamp;
             buffer.Push(delta);
+            return delta;
+          }
+
+          /* Resets lastTimestamp to the current time, basing future delta computations off this new timestamp */
+          void ResetDelta()
+          {
+            gettimeofday(&tv, NULL);
+            lastTimestamp = (uint32_t)tv.tv_sec * 1000000L + (uint32_t)tv.tv_usec;
           }
 
           /* returns the average tick time over the moving historical average in milliseconds */
@@ -262,11 +256,13 @@ namespace Ambience
             return (float)buffer.GetBufferAverage() / (float)1000;
           }
 
-          /* returns the average ticks / sec over the moving historical average */
+          /* returns the current ticks per second */
           float GetAvgTickRate()
           {
-            float avgTickTime = GetAvgTickTime() ;    // in milliseconds
-            return (float)1000 / avgTickTime;         // number of avgTickTime ticks in a second
+            float realTickTime = GetAvgTickTime() < TickManager::GetInstance().GetTickTime() ? 
+              TickManager::GetInstance().GetTickTime() : 
+              GetAvgTickTime();
+            return (float)1000 / realTickTime;      // ticks (number of "realTickTimes") per second
           }
         
         private:
@@ -305,12 +301,12 @@ namespace Ambience
 
   void TickManager::Tick()
   {
-    uint32_t tickDelta = timer.GetCurrentDelta();
+    uint32_t tickDelta = timer.CaptureDelta();
     if (tickDelta < tickTime)
     {
       delayMicroseconds(tickTime - tickDelta);
     }
-    timer.CaptureDelta();
+    timer.ResetDelta();
 
     // temporary (until this is implemented app-side)
     tickCounter++;
