@@ -44,6 +44,10 @@ initialize the webserver. */
 // Maximum number of LED modes supported
 #define MAX_MODES 64
 
+// WiFi credentials... TODO: don't store in plain text
+#define WIFI_SSID "HNET2"
+#define WIFI_PASS "Flask!Deranged1!Oasis!Jaws"
+
 
 // ==================== LED Count ==================== //
 
@@ -140,11 +144,8 @@ namespace Ambience
 
   void InitWiFi() 
   {
-    // WiFi credentials... TODO: don't store in plain text
-    const char* ssid = "HNET2";
-    const char* pass = "Flask!Deranged1!Oasis!Jaws";
     WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, pass);
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
 
     // Attempt to establish a connection
     int attempts = 0;
