@@ -41,6 +41,7 @@ namespace Ambience
       static void   HandleSetBrightness();
       static void   HandleGetActive();
       static void   HandleSetActive();
+      static void   HandleGetState();
       static void   HandleGetStats();
 
     private:
@@ -68,6 +69,7 @@ namespace Ambience
     server->on("/GetBrightness", Server::HandleGetBrightness);
     server->on("/SetActive", Server::HandleSetActive);
     server->on("/GetActive", Server::HandleGetActive);
+    server->on("/GetState", Server::HandleGetState);
     server->on("/GetStats", Server::HandleGetStats);
 
     // start webserver
@@ -159,10 +161,10 @@ namespace Ambience
         }
 
         StaticJsonDocument<64> payload;
-        JsonArray color = payload.createNestedArray("Color");
-        if (colorIndex == 1) { color.add(leds->Color1.H); color.add(leds->Color1.S); color.add(leds->Color1.V); color.add(leds->Color1.W); }
-        if (colorIndex == 2) { color.add(leds->Color2.H); color.add(leds->Color2.S); color.add(leds->Color2.V); color.add(leds->Color2.W); }
-        if (colorIndex == 3) { color.add(leds->Color3.H); color.add(leds->Color3.S); color.add(leds->Color3.V); color.add(leds->Color3.W); }
+        JsonObject color = payload.createNestedObject("Color");
+        if (colorIndex == 1) { color["H"] = leds->Color1.H; color["S"] = leds->Color1.S; color["V"] = leds->Color1.V; color["W"] = leds->Color1.W; }
+        if (colorIndex == 2) { color["H"] = leds->Color2.H; color["S"] = leds->Color2.S; color["V"] = leds->Color2.V; color["W"] = leds->Color2.W; }
+        if (colorIndex == 3) { color["H"] = leds->Color3.H; color["S"] = leds->Color3.S; color["V"] = leds->Color3.V; color["W"] = leds->Color3.W; }
         String serializedPayload;
         serializeJson(payload, serializedPayload);
         LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
@@ -278,7 +280,7 @@ namespace Ambience
   void Server::HandleGetModes()
   {
     LOG_REQUEST(server->uri());
-    StaticJsonDocument<512> payload;
+    StaticJsonDocument<1024> payload;
     JsonArray modes = payload.createNestedArray("Modes");
     leds->GetAllModes(modes);
     String serializedPayload;
@@ -406,9 +408,44 @@ namespace Ambience
   }
 
 
+  // ==================== State ==================== //
+
+void Server::HandleGetState()
+  {
+    LOG_REQUEST(server->uri());
+    StaticJsonDocument<2048> payload;     // Alloc size here might be an overestimate...
+
+    // Colors
+    JsonObject color1 = payload.createNestedObject("Color1");
+    JsonObject color2 = payload.createNestedObject("Color2");
+    JsonObject color3 = payload.createNestedObject("Color3");
+    { color1["H"] = leds->Color1.H; color1["S"] = leds->Color1.S; color1["V"] = leds->Color1.V; color1["W"] = leds->Color1.W; }
+    { color2["H"] = leds->Color2.H; color2["S"] = leds->Color2.S; color2["V"] = leds->Color2.V; color2["W"] = leds->Color2.W; }
+    { color3["H"] = leds->Color3.H; color3["S"] = leds->Color3.S; color3["V"] = leds->Color3.V; color3["W"] = leds->Color3.W; }
+
+    // Mode
+    payload["Mode"] = leds->GetMode();
+
+    // Modes
+    JsonArray modes = payload.createNestedArray("Modes");
+    leds->GetAllModes(modes);
+
+    // Brightness
+    payload["Brightness"] = (int)(leds->GetBrightness());
+
+    // Active
+    payload["Active"] = leds->GetActive();
+
+    String serializedPayload;
+    serializeJson(payload, serializedPayload);
+    LOG_RESPONSE_PAYLOAD(RESPONSE_OK, serializedPayload);
+    server->send(RESPONSE_OK, "json", serializedPayload);
+  }
+
+
   // ==================== Stats ==================== //
 
-  void Server::HandleGetStats()
+void Server::HandleGetStats()
   {
     LOG_REQUEST(server->uri());
     StaticJsonDocument<64> payload;

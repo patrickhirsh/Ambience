@@ -153,7 +153,7 @@ namespace Ambience
     {     
       attempts++;
       LOGW("failed to connect to WiFi with SSID: ");
-      LOGW(ssid);
+      LOGW(WIFI_SSID);
       LOGF(". Attempt %d. Retrying...", attempts);
       delay(500);
       if (attempts > 5) { ESP.restart(); }
@@ -188,8 +188,7 @@ namespace Ambience
 #endif
 
 
-      /* Simple timer that tracks time passed between invocations of its "Delta()" method.
-      This timer also maintains a moving historical average of the delta values it yields over time. */
+      /* Simple timer that tracks tick deltas. This timer also maintains a moving historical average of the delta values it yields over time. */
       class Timer
       {
         private:
