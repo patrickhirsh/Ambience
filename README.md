@@ -1,7 +1,7 @@
 # Ambience
 Ambience is network-based LED software built for ESP32 microcontrollers and designed to control individually-addressable ("neopixel") LEDs. Each device running Ambience software can controlled by any network-capable device with HTTP requests.  
 
-This smart LED implementation aims to be **lightweight**, **flexible**, and **powerful** though its simple web API. Control your device using your favorite home automation software, or implement your own web application to compose device states exactly how you want. Check out my IOS app [Home](https://github.com/patrickhirsh/Home) for an example of how complex behavior can be composed from Ambience's web API.
+This smart LED implementation aims to be **lightweight**, **flexible**, and **powerful** though its simple web API. Take a look at the **[Web API](https://htmlpreview.github.io/?https://github.com/patrickhirsh/Ambience/blob/main/data/WebserverAPI.html)** to see all the features Ambience provides. Control Ambience devices directly using your favorite home automation software, or implement your own web application to compose lighting effects in more complicated ways. Check out my IOS app [Home](https://github.com/patrickhirsh/Home) for an example of more complex behavior using Ambience's web API.
 
 ## Environment Setup
 In order to build and flash Ambience onto an ESP32, you'll need to first install the required libraries and tools. Currently you must do the building and flashing of Ambience yourself using Arduino IDE.
