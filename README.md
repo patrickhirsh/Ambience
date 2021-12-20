@@ -20,5 +20,5 @@ With the ESP32 connected to you computer via USB, the correct board selected, an
 2. Open the Ambience.ino file in your Arduino IDE
 3. Make any desired changes to the configuration macros in "Core.h" for this device.
     - Most noteably, esnure **NUM_LEDS**, **WIFI_SSID**, **WIFI_PASS**, and **DATA_PIN** are set correctly 
-4. Upload content located in the "data" directory to the ESP32's interanl storage using the "ESP32 Sketch Data Upload" tool located in the "Tools" dropdown.
+4. Upload content located in the "data" directory to the ESP32's internal storage using the "ESP32 Sketch Data Upload" tool located in the "Tools" dropdown.
 5. Build and Upload the sketch using the "Upload" button.
