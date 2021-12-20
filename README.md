@@ -1,5 +1,5 @@
 # Ambience
-Ambience is smart light software built for ESP32 microcontrollers and designed to control individually-addressable ("neopixel") LEDs. Each device (Ambience "Node") running the Ambience software can controlled by any network-capable device with HTTP requests.  
+Ambience is network-based LED software built for ESP32 microcontrollers and designed to control individually-addressable ("neopixel") LEDs. Each device running Ambience software can controlled by any network-capable device with HTTP requests.  
 
 This smart LED implementation aims to be **lightweight**, **flexible**, and **powerful** though its simple web API. Control your device using your favorite home automation software, or implement your own web application to compose device states exactly how you want. Check out my IOS app [Home](https://github.com/patrickhirsh/Home) for an example of how complex behavior can be composed from Ambience's web API.
 
